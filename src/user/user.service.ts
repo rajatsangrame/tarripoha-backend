@@ -14,6 +14,15 @@ export class UserService {
     private configService: ConfigService,
   ) {}
 
+  private userQuery = {
+    id: true,
+    username: true,
+    firstName: true,
+    lastName: true,
+    email: true,
+    isActive: true,
+  };
+
   private async isExistingUser(userDto: CreateUserDto): Promise<boolean> {
     const { username, email } = userDto;
     const queryBuilder = this.userRepository
@@ -55,11 +64,7 @@ export class UserService {
 
   findAll(): Promise<User[]> {
     return this.userRepository.find({
-      select: {
-        id: true,
-        username: true,
-        password: true,
-      },
+      select: this.userQuery,
       where: {
         isActive: true,
       },
@@ -68,11 +73,6 @@ export class UserService {
 
   findByUsername(username: string): Promise<User> {
     return this.userRepository.findOne({
-      select: {
-        id: true,
-        username: true,
-        password: true,
-      },
       where: {
         username: username,
         isActive: true,

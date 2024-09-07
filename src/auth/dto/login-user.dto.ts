@@ -5,10 +5,10 @@ export class LoginUserDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  readonly username: string;
+  username: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  readonly password: string;
+  password: string;
 }
