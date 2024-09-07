@@ -14,14 +14,14 @@ export class UserService {
     private configService: ConfigService,
   ) {}
 
-  private userQuery = {
-    id: true,
-    username: true,
-    firstName: true,
-    lastName: true,
-    email: true,
-    isActive: true,
-  };
+  private userQuery = [
+    'user.id',
+    'user.username',
+    'user.email',
+    'user.firstName',
+    'user.lastName',
+    'user.isActive',
+  ];
 
   private async isExistingUser(userDto: CreateUserDto): Promise<boolean> {
     const { username, email } = userDto;
@@ -54,21 +54,13 @@ export class UserService {
   async search(@Query() dto: SearchUserDto): Promise<User[]> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
+      .select(this.userQuery)
       .where('user.username ILIKE :query', { query: `%${dto.query}%` })
       .orWhere('user.email ILIKE :query', { query: `%${dto.query}%` });
 
     const offset = (dto.page - 1) * dto.size;
     queryBuilder.skip(offset).take(dto.size);
     return queryBuilder.getMany();
-  }
-
-  findAll(): Promise<User[]> {
-    return this.userRepository.find({
-      select: this.userQuery,
-      where: {
-        isActive: true,
-      },
-    });
   }
 
   findByUsername(username: string): Promise<User> {
