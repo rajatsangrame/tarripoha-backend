@@ -1,5 +1,7 @@
 {
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
-    }
+    },
+    "editor.fontFamily": "JetBrain Mono",
+    "editor.fontLigatures": true
 }
