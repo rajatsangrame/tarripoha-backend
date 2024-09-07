@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Query } from '@nestjs/common';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user-dto';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
+import { SearchUserDto } from './dto/search-user-dto';
 
 @Injectable()
 export class UserService {
@@ -33,12 +34,23 @@ export class UserService {
     return bcrypt.hash(password, parseInt(saltRounds));
   }
 
-  async createUser(userDto: CreateUserDto): Promise<User> {
-    const isExistingUser = await this.isExistingUser(userDto);
+  async createUser(dto: CreateUserDto): Promise<User> {
+    const isExistingUser = await this.isExistingUser(dto);
     if (isExistingUser) throw new BadRequestException('User already exist');
-    const user = this.userRepository.create(userDto);
-    user.password = await this.encryptPasswork(userDto.password);
+    const user = this.userRepository.create(dto);
+    user.password = await this.encryptPasswork(dto.password);
     return this.userRepository.save(user);
+  }
+
+  async search(@Query() dto: SearchUserDto): Promise<User[]> {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.username ILIKE :query', { query: `%${dto.query}%` })
+      .orWhere('user.email ILIKE :query', { query: `%${dto.query}%` });
+
+    const offset = (dto.page - 1) * dto.size;
+    queryBuilder.skip(offset).take(dto.size);
+    return queryBuilder.getMany();
   }
 
   findAll(): Promise<User[]> {
