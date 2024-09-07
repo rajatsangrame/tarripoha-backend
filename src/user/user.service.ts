@@ -4,13 +4,22 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) {}
 
   findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    return this.usersRepository.find({
+      select: {
+        id: true,
+        username: true,
+        password: true,
+      },
+      where: {
+        isActive: true,
+      },
+    });
   }
 
   findOne(id: number): Promise<User> {

@@ -4,8 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users/users.module';
-import { User } from './users/user.entity';
+import { UserModule } from './user/user.module';
 
 @Module({
   controllers: [AppController],
@@ -26,11 +25,11 @@ import { User } from './users/user.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [User],
-        synchronize: true,
+        entities: ['dist/**/*.entity.js'],
+        synchronize: false, // Do not change this to true
       }),
     }),
-    UsersModule,
+    UserModule,
   ],
 })
 export class AppModule {}

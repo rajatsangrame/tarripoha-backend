@@ -2,6 +2,6 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
-    "editor.fontFamily": "JetBrain Mono",
-    "editor.fontLigatures": true
+    // "editor.fontFamily": "JetBrains Mono",
+    // "editor.fontLigatures": true
 }
