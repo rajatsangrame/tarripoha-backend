@@ -17,7 +17,6 @@ async function bootstrap() {
     .setDescription('API description for tarripoha')
     .setVersion('1.0')
     .addBearerAuth()
-    .addTag('Tarripoha')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document, {
