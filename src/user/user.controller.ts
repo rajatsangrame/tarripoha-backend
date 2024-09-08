@@ -41,7 +41,8 @@ export class UserController {
 
   @Post('create-user-mapping')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(USER_ROLE.ADMIN)
   async createUserMapping(
     @Body() dto: UserMappingDto,
   ): Promise<UserRoleMapping> {

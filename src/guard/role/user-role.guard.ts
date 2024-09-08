@@ -27,7 +27,7 @@ export class RolesGuard extends JwtAuthGuard implements CanActivate {
 
     const { user } = context.switchToHttp().getRequest();
 
-    if (!requiredRoles.some((role) => user.role?.includes(role))) {
+    if (!requiredRoles.some((role) => user.roles?.includes(role))) {
       throw new ForbiddenException(
         'Access denied: You do not have the required role',
       );

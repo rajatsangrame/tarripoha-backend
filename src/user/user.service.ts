@@ -118,14 +118,15 @@ export class UserService {
     return this.userRoleMappingRepository.save(userRoleMappping);
   }
 
-  findUserBy(where: object, select?: object): Promise<User> {
-    return this.userRepository.findOne({
-      ...(select && { select }),
+  findUserBy(where: object, select?: string[]): Promise<User> {
+    const queryOptions: object = {
       where: {
         ...where,
         isActive: true,
       },
-    });
+      ...(select && { select }),
+    };
+    return this.userRepository.findOne(queryOptions);
   }
 
   getUserRoles(userId: number): Promise<UserRoleMapping[]> {
