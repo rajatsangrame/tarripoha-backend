@@ -5,7 +5,10 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   PrimaryColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { UserRole } from './user-role.entity';
 
 @Entity({ name: 'user_role_mapping' })
 export class UserRoleMapping {
@@ -26,4 +29,12 @@ export class UserRoleMapping {
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt?: Date;
+
+  @ManyToOne(() => UserRole, { eager: true })
+  @JoinColumn({ name: 'role_id' })
+  userRole: UserRole;
+
+  get roleName(): string {
+    return this.userRole.role;
+  }
 }

@@ -27,18 +27,6 @@ export class UserService {
     private configService: ConfigService,
   ) {}
 
-  private userQuery = [
-    'user.id',
-    'user.username',
-    'user.email',
-    'user.firstName',
-    'user.lastName',
-    'user.isActive',
-    'user.createdAt',
-    'user.updatedAt',
-    'user.deletedAt',
-  ];
-
   private async isExistingUser(userDto: CreateUserDto): Promise<boolean> {
     const { username, email } = userDto;
     const queryBuilder = this.userRepository
@@ -70,7 +58,6 @@ export class UserService {
   async search(@Query() dto: SearchUserDto): Promise<User[]> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
-      .select(this.userQuery)
       .where('user.username ILIKE :query', { query: `%${dto.query}%` })
       .orWhere('user.email ILIKE :query', { query: `%${dto.query}%` });
 
@@ -131,10 +118,17 @@ export class UserService {
     return this.userRoleMappingRepository.save(userRoleMappping);
   }
 
-  findByUsername(username: string): Promise<User> {
-    return this.userRepository.findOneBy({
-      username: username,
-      isActive: true,
+  findUserBy(where: object, select?: object): Promise<User> {
+    return this.userRepository.findOne({
+      ...(select && { select }),
+      where: {
+        ...where,
+        isActive: true,
+      },
     });
+  }
+
+  getUserRoles(userId: number): Promise<UserRoleMapping[]> {
+    return this.userRoleMappingRepository.findBy({ userId });
   }
 }

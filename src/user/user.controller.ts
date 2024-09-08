@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { User } from './entitity/user.entity';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user-dto';
@@ -7,9 +17,13 @@ import { SearchUserDto } from './dto/search-user-dto';
 import { JwtAuthGuard } from 'src/guard/auth/jwt.auth.guard';
 import { UserMappingDto } from './dto/user-mapping.dto';
 import { UserRoleMapping } from './entitity/user-mappping.entity';
+import { RolesGuard } from 'src/guard/role/user-role.guard';
+import { USER_ROLE } from 'src/guard/role/user-role.enum';
+import { Roles } from 'src/guard/role/roles.decorator';
 
 @ApiTags('User')
 @Controller('user')
+@UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -34,9 +48,10 @@ export class UserController {
     return this.userService.createUserMapping(dto);
   }
 
-  @Post('update-user-mapping')
+  @Put('update-user-mapping')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(USER_ROLE.ADMIN)
   async updatedUserMapping(
     @Body() dto: UserMappingDto,
   ): Promise<{ success: boolean }> {

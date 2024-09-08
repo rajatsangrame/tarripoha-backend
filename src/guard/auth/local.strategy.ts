@@ -14,6 +14,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
+    const roles = await this.authService.getUserRoles(user.id);
+    user.roles = roles.map((r) => r.roleName);
     return user;
   }
 }
