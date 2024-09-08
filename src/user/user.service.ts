@@ -1,16 +1,29 @@
-import { BadRequestException, Injectable, Query } from '@nestjs/common';
-import { User } from './user.entity';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  Query,
+} from '@nestjs/common';
+import { User } from './entitity/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user-dto';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { SearchUserDto } from './dto/search-user-dto';
+import { UserMappingDto } from './dto/user-mapping.dto';
+import { UserRoleMapping } from './entitity/user-mappping.entity';
+import { UserRole } from './entitity/user-role.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(UserRole)
+    private userRoleRepository: Repository<UserRole>,
+    @InjectRepository(UserRoleMapping)
+    private userRoleMappingRepository: Repository<UserRoleMapping>,
     private configService: ConfigService,
   ) {}
 
@@ -21,6 +34,9 @@ export class UserService {
     'user.firstName',
     'user.lastName',
     'user.isActive',
+    'user.createdAt',
+    'user.updatedAt',
+    'user.deletedAt',
   ];
 
   private async isExistingUser(userDto: CreateUserDto): Promise<boolean> {
@@ -63,12 +79,62 @@ export class UserService {
     return queryBuilder.getMany();
   }
 
+  async updatedUserMapping(dto: UserMappingDto): Promise<{ success: boolean }> {
+    const { userId, roleId, status } = dto;
+
+    const userExists = await this.userRepository.findOneBy({
+      id: userId,
+      isActive: true,
+    });
+    if (!userExists) throw new NotFoundException('User not found');
+
+    const roleExists = await this.userRoleRepository.findOneBy({
+      id: roleId,
+    });
+    if (!roleExists) throw new NotFoundException('Role not found');
+
+    const existingMapping = await this.userRoleMappingRepository.findOneBy({
+      userId,
+      roleId,
+    });
+
+    if (!existingMapping) {
+      throw new ConflictException('Mapping does not exists');
+    }
+    await this.userRoleMappingRepository.update({ userId, roleId }, { status });
+    return { success: true };
+  }
+
+  async createUserMapping(dto: UserMappingDto): Promise<UserRoleMapping> {
+    const { userId, roleId } = dto;
+    const userExists = await this.userRepository.findOneBy({
+      id: userId,
+      isActive: true,
+    });
+    if (!userExists) throw new NotFoundException('User not found');
+
+    const roleExists = await this.userRoleRepository.findOneBy({
+      id: roleId,
+    });
+    if (!roleExists) throw new NotFoundException('Role not found');
+
+    const existingMapping = await this.userRoleMappingRepository.findOneBy({
+      userId,
+      roleId,
+    });
+
+    if (existingMapping) {
+      throw new ConflictException('Mapping already exists');
+    }
+
+    const userRoleMappping = this.userRoleMappingRepository.create(dto);
+    return this.userRoleMappingRepository.save(userRoleMappping);
+  }
+
   findByUsername(username: string): Promise<User> {
-    return this.userRepository.findOne({
-      where: {
-        username: username,
-        isActive: true,
-      },
+    return this.userRepository.findOneBy({
+      username: username,
+      isActive: true,
     });
   }
 }
