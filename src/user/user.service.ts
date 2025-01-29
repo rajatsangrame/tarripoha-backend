@@ -1,0 +1,143 @@
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  Query,
+} from '@nestjs/common';
+import { User } from './entity/user.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDto } from './dto/create-user-dto';
+import * as bcrypt from 'bcryptjs';
+import { ConfigService } from '@nestjs/config';
+import { SearchUserDto } from './dto/search-user-dto';
+import { UserMappingDto } from './dto/user-mapping.dto';
+import { UserRoleMapping } from './entity/user-mappping.entity';
+import { UserRole } from './entity/user-role.entity';
+import { UserRoleType } from './user-role-type.enum';
+
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(UserRole)
+    private userRoleRepository: Repository<UserRole>,
+    @InjectRepository(UserRoleMapping)
+    private userRoleMappingRepository: Repository<UserRoleMapping>,
+    private configService: ConfigService,
+  ) {}
+
+  private async isExistingUser(userDto: CreateUserDto): Promise<boolean> {
+    const { username, email } = userDto;
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.isActive = :isActive', { isActive: true });
+    if (username) {
+      queryBuilder.where('user.username = :username', { username });
+    }
+    if (email) {
+      queryBuilder.where('user.email = :email', { email });
+    }
+    const dbUser = await queryBuilder.getOne();
+    return dbUser !== null;
+  }
+
+  private async encryptPasswork(password) {
+    const saltRounds = this.configService.get('SALT_ROUNDS');
+    return bcrypt.hash(password, parseInt(saltRounds));
+  }
+
+  async createUser(dto: CreateUserDto): Promise<User> {
+    const isExistingUser = await this.isExistingUser(dto);
+    if (isExistingUser) throw new BadRequestException('User already exist');
+    const user = this.userRepository.create(dto);
+    user.password = await this.encryptPasswork(dto.password);
+    await this.userRepository.save(user);
+    await this.userRoleMappingRepository.insert({
+      userId: user.id,
+      roleId: UserRoleType.USER,
+    });
+    await this.userRepository.save(user);
+    return user;
+  }
+
+  async search(@Query() dto: SearchUserDto): Promise<User[]> {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.username ILIKE :query', { query: `%${dto.query}%` })
+      .orWhere('user.email ILIKE :query', { query: `%${dto.query}%` });
+
+    const offset = (dto.page - 1) * dto.size;
+    queryBuilder.skip(offset).take(dto.size);
+    return queryBuilder.getMany();
+  }
+
+  async updatedUserMapping(dto: UserMappingDto): Promise<{ success: boolean }> {
+    const { userId, roleId, status } = dto;
+
+    const userExists = await this.userRepository.findOneBy({
+      id: userId,
+      isActive: true,
+    });
+    if (!userExists) throw new NotFoundException('User not found');
+
+    const roleExists = await this.userRoleRepository.findOneBy({
+      id: roleId,
+    });
+    if (!roleExists) throw new NotFoundException('Role not found');
+
+    const existingMapping = await this.userRoleMappingRepository.findOneBy({
+      userId,
+      roleId,
+    });
+
+    if (!existingMapping) {
+      throw new ConflictException('Mapping does not exists');
+    }
+    await this.userRoleMappingRepository.update({ userId, roleId }, { status });
+    return { success: true };
+  }
+
+  async createUserMapping(dto: UserMappingDto): Promise<UserRoleMapping> {
+    const { userId, roleId } = dto;
+    const userExists = await this.userRepository.findOneBy({
+      id: userId,
+      isActive: true,
+    });
+    if (!userExists) throw new NotFoundException('User not found');
+
+    const roleExists = await this.userRoleRepository.findOneBy({
+      id: roleId,
+    });
+    if (!roleExists) throw new NotFoundException('Role not found');
+
+    const existingMapping = await this.userRoleMappingRepository.findOneBy({
+      userId,
+      roleId,
+    });
+
+    if (existingMapping) {
+      throw new ConflictException('Mapping already exists');
+    }
+
+    const userRoleMapping = this.userRoleMappingRepository.create(dto);
+    await this.userRoleMappingRepository.save(userRoleMapping);
+    return userRoleMapping;
+  }
+
+  findUserBy(where: object, select?: string[]): Promise<User> {
+    const queryOptions: object = {
+      where: {
+        ...where,
+        isActive: true,
+      },
+      ...(select && { select }),
+    };
+    return this.userRepository.findOne(queryOptions);
+  }
+
+  getUserRoles(userId: number): Promise<UserRoleMapping[]> {
+    return this.userRoleMappingRepository.findBy({ userId });
+  }
+}

@@ -1,0 +1,8 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "workbench.tree.indent": 14,
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.fontLigatures": true
+}

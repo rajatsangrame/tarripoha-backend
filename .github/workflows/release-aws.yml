@@ -1,0 +1,130 @@
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches:
+      - release/v*.*.*
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: tarripoha-backend-prod
+  ECS_SERVICE: tarripoha-backed-prod-service
+  ECS_CLUSTER: tarripoha-backend-prod-cluster
+  ECS_TASK_DEFINITION: task-definition.json
+  CONTAINER_NAME: tarripoha-backend-prod
+
+jobs:
+
+  version-validation:
+    name: Version Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate Semantic Versioning
+        run: |
+          BRANCH_NAME="$GITHUB_REF_NAME"
+          VERSION_PATTERN="^release/v[0-9]+\.[0-9]+\.[0-9]+$"
+
+          if [[ ! $BRANCH_NAME =~ $VERSION_PATTERN ]]; then
+            echo "❌ Error: Branch name does not follow semantic versioning (release/vX.Y.Z)"
+            exit 1
+          fi
+          echo "✅ Branch name '$BRANCH_NAME' is valid."
+
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: version-validation
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build --if-present
+
+      - name: Run Test Cases
+        run: npm test
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Generate image name
+        id: generate-img-name
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Extract the first 8 characters of the SHA for a short tag
+          IMAGE_TAG=$(echo "${IMAGE_TAG}" | cut -c1-8)
+
+          VERSION_TAG=$(echo "${GITHUB_REF_NAME}" | sed 's|release/||')
+          
+          # Build the Docker image with both tags
+          docker build --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          
+          # Push both tags to the repository
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION_TAG 
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image-name=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Fetch the latest task definition revision
+        id: fetch-task-def
+        run: |
+          aws ecs describe-task-definition --task-definition tarripoha-backend-prod-td --query taskDefinition > task-definition.json
+  
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.generate-img-name.outputs.image-name }}
+          
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          codedeploy-appspec: .aws/appspec.yml
+          codedeploy-application: tarripoha-backend-prod
+          codedeploy-deployment-group: tarripoha-backend-prod-deployment-group
+          wait-for-service-stability: true

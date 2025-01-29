@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  backend:
+    image: tarripoha-backend:latest
+    container_name: tarripoha-backend-prod
+    ports:
+      - "3001:3001"

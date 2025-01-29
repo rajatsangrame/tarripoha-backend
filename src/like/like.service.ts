@@ -1,0 +1,59 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Like } from './entity/like.entity';
+import { InsertLikeDto } from './dto/insert-like-dto';
+import { GetLikesDto } from './dto/get-likes-dto';
+import { ContentValidator } from '../common/service/content-validation.service';
+
+@Injectable()
+export class LikeService {
+  constructor(
+    @InjectRepository(Like) private likeRepository: Repository<Like>,
+    private readonly contentValidator: ContentValidator,
+  ) {}
+
+  async insertLike(userId: number, dto: InsertLikeDto): Promise<Like> {
+    try {
+      const { isValid, message } = await this.contentValidator.validateContent(
+        dto.contentType,
+        dto.contentId,
+      );
+      if (!isValid) {
+        throw new BadRequestException(message);
+      }
+      const likeData = { ...dto, userId };
+      const like = this.likeRepository.create(likeData);
+      await this.likeRepository.save(like);
+      return like;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getLikes(dto: GetLikesDto): Promise<Like[]> {
+    try {
+      const queryBuilder = this.likeRepository.createQueryBuilder('like');
+
+      queryBuilder.where('like.contentId = :contentId', {
+        contentId: dto.contentId,
+      });
+      queryBuilder.andWhere('like.contentType = :contentType', {
+        contentType: dto.contentType,
+      });
+      queryBuilder.andWhere('like.isActive = :isActive', {
+        isActive: true,
+      });
+
+      if (dto.userId) {
+        queryBuilder.andWhere('like.userId = :userId', {
+          userId: dto.userId,
+        });
+      }
+      const likes = await queryBuilder.getMany();
+      return likes;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
