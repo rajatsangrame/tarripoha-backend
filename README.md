@@ -11,7 +11,14 @@ The source code consist of the following:
 - [Jest](https://jestjs.io)
 - [Swagger](https://swagger.io)
 - [CI-CD for Release Deployment to AWS ECS Task, ECR Image, Load Balancer and Code Deploy](https://docs.github.com/en/actions/use-cases-and-examples/deploying/deploying-to-amazon-elastic-container-service)
-- Used Github Actions to creating Docker Build, Running Test Cases and Deploying the ECS
+- [Used Github Actions to creating Docker Build, Running Test Cases and Deploying the ECS](https://github.com/rajatsangrame/tarripoha-backend/actions)
+
+
+## Project Images
+
+<img width="1200" alt="Github Actions" src="https://github.com/user-attachments/assets/7b022ad9-fc10-4179-a6eb-f77568ab5ce4" />
+
+<img width="1200" alt="AWS Deployment" src="https://github.com/user-attachments/assets/71fe3a49-5309-47bb-910c-116f47aa428e" />
 
 
 
@@ -26,10 +33,7 @@ $ npm install
 
 ```bash
 # development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
+$ npm run start:local
 
 # production mode
 $ npm run start:prod
