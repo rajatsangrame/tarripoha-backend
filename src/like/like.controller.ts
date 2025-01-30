@@ -17,7 +17,7 @@ import { InsertLikeDto } from './dto/insert-like-dto';
 import { Like } from './entity/like.entity';
 import { GetLikesDto } from './dto/get-likes-dto';
 
-@Controller('like')
+@Controller('Like')
 @ApiTags('like')
 export class LikeController {
   constructor(private likeService: LikeService) {}
