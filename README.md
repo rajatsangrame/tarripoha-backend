@@ -16,9 +16,16 @@ The source code consist of the following:
 
 ## Project Images
 
-<img width="1200" alt="Github Actions" src="https://github.com/user-attachments/assets/7b022ad9-fc10-4179-a6eb-f77568ab5ce4" />
+#### CI CD Pipeline
+<img width="1200" alt="CI CD Pipeline" src="https://github.com/user-attachments/assets/13c6541b-2ba2-4e99-a413-295fcc794607" />
 
+#### AWS Deployment
 <img width="1200" alt="AWS Deployment" src="https://github.com/user-attachments/assets/71fe3a49-5309-47bb-910c-116f47aa428e" />
+
+#### ECS Task Service
+<img width="1200" alt="" src="https://github.com/user-attachments/assets/df2c3c46-39db-400c-8b60-67a3b63cfb16" />
+
+
 
 
 
