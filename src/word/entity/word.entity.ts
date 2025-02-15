@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Language } from './language.entity';
+import { User } from 'src/user/entity/user.entity';
 
 @Entity({ name: 'word' })
 export class Word {
@@ -45,7 +46,7 @@ export class Word {
   @JoinColumn({ name: 'language_id' })
   language: Language;
 
-  @ManyToOne(() => Language, { eager: true })
+  @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
-  user: Language;
+  user: User;
 }

@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,6 +25,16 @@ async function bootstrap() {
     jsonDocumentUrl: 'swagger/json',
   });
   SwaggerModule.setup('api', app, document);
+
+  if (process.env.NODE_ENV != 'prod') {
+    app.use(
+      cors({
+        origin: 'http://localhost:3000',
+        methods: 'GET,POST,PUT,DELETE',
+        allowedHeaders: 'Content-Type, Authorization',
+      }),
+    );
+  }
   await app.listen(3001);
 }
 bootstrap();

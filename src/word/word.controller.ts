@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { WordService } from './word.service';
 import { Word } from './entity/word.entity';
@@ -20,5 +27,13 @@ export class WordController {
   async insertWord(@Body() dto: InsertWordDto, @Request() req): Promise<Word> {
     const userId = req.user.id;
     return this.wordService.insertWord(userId, dto);
+  }
+
+  @Get('get-words')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(USER_ROLE.USER)
+  async getWords(): Promise<Word[]> {
+    return this.wordService.getWords();
   }
 }

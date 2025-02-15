@@ -23,4 +23,13 @@ export class WordService {
       throw error;
     }
   }
+
+  async getWords(): Promise<Word[]> {
+    try {
+      const words = this.wordRepository.findBy({ isActive: true });
+      return words;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
