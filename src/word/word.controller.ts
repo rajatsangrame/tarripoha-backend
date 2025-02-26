@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,8 @@ import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
+import { SearchWordDto } from './dto/search-word-dto';
+import { SearchResponseDto } from './dto/search-response-dto';
 
 @Controller('word')
 @ApiTags('Word')
@@ -35,5 +38,13 @@ export class WordController {
   @Roles(USER_ROLE.USER)
   async getWords(): Promise<Word[]> {
     return this.wordService.getWords();
+  }
+
+  @Get('search')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(USER_ROLE.USER)
+  async search(@Query() dto: SearchWordDto): Promise<SearchResponseDto> {
+    return this.wordService.search(dto);
   }
 }

@@ -27,6 +27,9 @@ export class Word {
   @Column({ name: 'meaning' })
   meaning: string;
 
+  @Column({ name: 'english_meaning', nullable: true })
+  englishMeaning: string;
+
   @Column({ name: 'description', nullable: true })
   description: string;
 
