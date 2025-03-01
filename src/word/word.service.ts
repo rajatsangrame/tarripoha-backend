@@ -43,16 +43,33 @@ export class WordService {
       queryBuilder
         .addSelect(
           `CASE 
-          WHEN word.name = :query THEN 1.0
-          WHEN word.meaning = :query THEN 1.0
-          ELSE ts_rank(word.search_vector, plainto_tsquery('english', :query))
+            WHEN word.name = :query THEN 1.0
+            WHEN word.meaning = :query THEN 1.0
+            ELSE ts_rank(word.search_vector, plainto_tsquery('english', :query)) 
           END`,
           'rank',
         )
-        .where("word.search_vector @@ plainto_tsquery('english',:query)", {
-          query,
-        })
+        .addSelect(
+          `GREATEST(
+            word_similarity(word.name, :query),
+            word_similarity(word.meaning, :query),
+            word_similarity(word.tags, :query),
+            word_similarity(word.english_meaning, :query)
+          )`,
+          'similarity_score',
+        )
+        .where(
+          `(
+            word.search_vector @@ plainto_tsquery('english', :query)
+            OR word_similarity(word.name, :query) > 0.3
+            OR word_similarity(word.meaning, :query) > 0.3
+            OR word_similarity(word.tags, :query) > 0.3
+            OR word_similarity(word.english_meaning, :query) > 0.3
+          )`,
+          { query },
+        )
         .orderBy('rank', 'DESC')
+        .addOrderBy('similarity_score', 'DESC')
         .skip(offset)
         .take(pageSize);
 
@@ -61,8 +78,6 @@ export class WordService {
           languageId: languageId,
         });
       }
-
-      queryBuilder.orderBy('rank', 'DESC');
 
       const [words, total] = await queryBuilder.getManyAndCount();
       return new SearchResponseDto(total, pageNo, pageSize, words);
