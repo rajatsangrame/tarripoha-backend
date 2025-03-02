@@ -24,7 +24,9 @@ export class LikeService {
       }
       const likeData = { ...dto, userId };
       const like = this.likeRepository.create(likeData);
-      await this.likeRepository.save(like);
+      await this.likeRepository.upsert(likeData, {
+        conflictPaths: ['userId', 'contentId', 'contentType'],
+      });
       return like;
     } catch (error) {
       throw error;

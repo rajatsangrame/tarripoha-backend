@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsEnum, IsBoolean } from 'class-validator';
 import { ContentType } from '../../common/enum/content-type.enum';
 
 export class InsertLikeDto {
@@ -16,4 +16,9 @@ export class InsertLikeDto {
     message: 'contentType must be a valid value',
   })
   contentType: ContentType;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty()
+  isActive: boolean;
 }
