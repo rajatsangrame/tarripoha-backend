@@ -44,7 +44,11 @@ export class WordController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
-  async search(@Query() dto: SearchWordDto): Promise<SearchResponseDto> {
-    return this.wordService.search(dto);
+  async search(
+    @Query() dto: SearchWordDto,
+    @Request() req,
+  ): Promise<SearchResponseDto> {
+    const userId = req.user.id;
+    return this.wordService.search(userId, dto);
   }
 }

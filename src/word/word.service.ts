@@ -35,10 +35,9 @@ export class WordService {
     }
   }
 
-  async search(dto: SearchWordDto): Promise<SearchResponseDto> {
+  async search(userId: number, dto: SearchWordDto): Promise<SearchResponseDto> {
     try {
-      const { query, languageId, pageNo = 1, pageSize = 10 } = dto;
-      const userId = 1;
+      const { query, languageId, pageNo = 1, pageSize = 20 } = dto;
       const offset = (pageNo - 1) * pageSize;
       const queryBuilder = this.wordRepository.createQueryBuilder('word');
       queryBuilder
@@ -60,7 +59,12 @@ export class WordService {
           'similarity_score',
         )
         .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
-        .leftJoin('like', 'l', 'l.content_id = word.id AND l.content_type = 1')
+        .leftJoin(
+          'like',
+          'l',
+          'l.content_id = word.id AND l.content_type = 1 AND l.user_id = :userId',
+          { userId },
+        )
         .where(
           `(
             word.search_vector @@ plainto_tsquery('english', :query)
