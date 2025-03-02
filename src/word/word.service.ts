@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { POSTGRES_ERROR_CODES } from '../common/constants/postgres.constants';
 import { SearchWordDto } from 'src/word/dto/search-word-dto';
-import { SearchResponseDto } from './dto/search-response-dto';
+import { SearchResponseDto, WordResponse } from './dto/search-response-dto';
 
 @Injectable()
 export class WordService {
@@ -38,6 +38,7 @@ export class WordService {
   async search(dto: SearchWordDto): Promise<SearchResponseDto> {
     try {
       const { query, languageId, pageNo = 1, pageSize = 10 } = dto;
+      const userId = 1;
       const offset = (pageNo - 1) * pageSize;
       const queryBuilder = this.wordRepository.createQueryBuilder('word');
       queryBuilder
@@ -58,6 +59,8 @@ export class WordService {
           )`,
           'similarity_score',
         )
+        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
+        .leftJoin('like', 'l', 'l.content_id = word.id AND l.content_type = 1')
         .where(
           `(
             word.search_vector @@ plainto_tsquery('english', :query)
@@ -79,8 +82,26 @@ export class WordService {
         });
       }
 
-      const [words, total] = await queryBuilder.getManyAndCount();
-      return new SearchResponseDto(total, pageNo, pageSize, words);
+      const [words, total] = await Promise.all([
+        queryBuilder.getRawMany(),
+        queryBuilder.getCount(),
+      ]);
+
+      const wordResponse: WordResponse[] = words.map((word) => ({
+        id: word.word_id,
+        languageId: word.word_language_id,
+        userId: word.word_user_id,
+        name: word.word_name,
+        meaning: word.word_meaning,
+        englishMeaning: word.word_english_meaning,
+        description: word.word_description,
+        isActive: word.word_is_active,
+        isApproved: word.word_is_approved,
+        isLiked: word.is_liked,
+        isSaved: word.is_saved,
+      }));
+
+      return new SearchResponseDto(total, pageNo, pageSize, wordResponse);
     } catch (error) {
       throw error;
     }
