@@ -57,14 +57,18 @@ export class WordService {
             word_similarity(word.english_meaning, :query)
           )`,
           'similarity_score',
-        )
-        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
-        .leftJoin(
-          'like',
-          'l',
-          'l.content_id = word.id AND l.content_type = 1 AND l.user_id = :userId',
-          { userId },
-        )
+        );
+      if (userId) {
+        queryBuilder
+          .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
+          .leftJoin(
+            'like',
+            'l',
+            'l.content_id = word.id AND l.content_type = 1 AND l.user_id = :userId',
+            { userId },
+          );
+      }
+      queryBuilder
         .where(
           `(
             word.search_vector @@ plainto_tsquery('english', :query)
