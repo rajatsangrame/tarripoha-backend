@@ -66,6 +66,13 @@ export class WordService {
             'l',
             'l.content_id = word.id AND l.content_type = 1 AND l.user_id = :userId',
             { userId },
+          )
+          .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved')
+          .leftJoin(
+            'saved',
+            'sv',
+            'sv.content_id = word.id AND sv.content_type = 1 AND sv.user_id = :userId',
+            { userId },
           );
       }
       queryBuilder

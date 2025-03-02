@@ -73,7 +73,7 @@ describe('SavedController', () => {
       mocksavedService.insertSaved.mockResolvedValue(mocksavedResult);
 
       const req = { user: { id: mockUserId } };
-      const result = await controller.insertsaved(mockDto, req);
+      const result = await controller.insertSaved(mockDto, req);
 
       expect(result).toEqual(mocksavedResult);
       expect(mocksavedService.insertSaved).toHaveBeenCalledWith(
