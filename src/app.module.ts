@@ -10,9 +10,16 @@ import { CommentController } from './comment/comment.controller';
 import { CommentModule } from './comment/comment.module';
 import { LikeController } from './like/like.controller';
 import { LikeModule } from './like/like.module';
+import { SavedModule } from './saved/saved.module';
+import { SavedController } from './saved/saved.controller';
 
 @Module({
-  controllers: [AppController, CommentController, LikeController],
+  controllers: [
+    AppController,
+    CommentController,
+    LikeController,
+    SavedController,
+  ],
   providers: [AppService],
   imports: [
     ConfigModule.forRoot({
@@ -25,6 +32,7 @@ import { LikeModule } from './like/like.module';
     WordModule,
     CommentModule,
     LikeModule,
+    SavedModule,
   ],
 })
 export class AppModule {}
