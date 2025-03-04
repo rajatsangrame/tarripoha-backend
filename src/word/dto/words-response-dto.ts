@@ -35,7 +35,7 @@ export class WordResponse {
   isSaved: boolean;
 }
 
-export class SearchResponseDto {
+export class WordsResponseDto {
   @ApiProperty()
   total: number;
 

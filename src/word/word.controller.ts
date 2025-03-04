@@ -16,7 +16,7 @@ import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
 import { SearchWordDto } from './dto/search-word-dto';
-import { SearchResponseDto } from './dto/search-response-dto';
+import { WordsResponseDto } from './dto/words-response-dto';
 
 @Controller('word')
 @ApiTags('Word')
@@ -47,7 +47,7 @@ export class WordController {
   async search(
     @Query() dto: SearchWordDto,
     @Request() req,
-  ): Promise<SearchResponseDto> {
+  ): Promise<WordsResponseDto> {
     const userId = req.user.id;
     return this.wordService.search(userId, dto);
   }
