@@ -43,14 +43,13 @@ export class SavedService {
     try {
       const { pageNo, pageSize, contentType } = dto;
       const offset = (pageNo - 1) * pageSize;
+
       const queryBuilder = await this.savedRepository
         .createQueryBuilder('saved')
-        .leftJoinAndSelect(Word, 'word', 'word.id = saved.contentId')
-        .leftJoinAndSelect(Like, 'like', 'word.id = like.contentId')
+        .leftJoin(Word, 'word', 'word.id = saved.contentId')
+        .leftJoin(Like, 'like', 'word.id = like.contentId')
         .where('saved.userId = :userId', { userId })
-        .andWhere('saved.contentType = :contentType', {
-          contentType,
-        })
+        .andWhere('saved.contentType = :contentType', { contentType })
         .andWhere('saved.isActive = :isActive', { isActive: true })
         .orderBy('saved.createdAt', 'DESC')
         .select([
@@ -60,17 +59,15 @@ export class SavedService {
           'word.englishMeaning AS "englishMeaning"',
           'word.description AS description',
           'word.created_at AS "createdAt"',
-          'word.created_at AS "updatedAt"',
+          'word.updated_at AS "updatedAt"',
           'word.language_id AS "languageId"',
           'word.user_id AS "userId"',
           'COALESCE(saved.is_active, false) AS "isSaved"',
           'COALESCE(like.is_active, false) AS "isLiked"',
-        ])
-        .take(pageSize)
-        .skip(offset);
+        ]);
 
       const [data, total] = await Promise.all([
-        queryBuilder.getRawMany(),
+        queryBuilder.offset(offset).limit(pageSize).getRawMany(),
         queryBuilder.getCount(),
       ]);
 

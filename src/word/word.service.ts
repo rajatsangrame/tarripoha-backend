@@ -91,9 +91,7 @@ export class WordService {
           { query },
         )
         .orderBy('rank', 'DESC')
-        .addOrderBy('similarity_score', 'DESC')
-        .skip(offset)
-        .take(pageSize);
+        .addOrderBy('similarity_score', 'DESC');
 
       if (languageId) {
         queryBuilder.andWhere('word.language_id = :languageId', {
@@ -102,7 +100,7 @@ export class WordService {
       }
 
       const [words, total] = await Promise.all([
-        queryBuilder.getRawMany(),
+        queryBuilder.offset(offset).limit(pageSize).getRawMany(),
         queryBuilder.getCount(),
       ]);
 
