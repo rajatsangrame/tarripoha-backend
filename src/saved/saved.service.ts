@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Saved } from './entity/saved.entity';
 import { InsertSavedDto } from './dto/insert-saved-dto';
 import { GetSavedDto } from './dto/get-saved-dto';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { Word } from 'src/word/entity/word.entity';
 import { PagingResponse } from 'src/common/interface/PagingResponse';
-import { User } from 'src/user/entity/user.entity';
+import { Like } from 'src/like/entity/like.entity';
 
 @Injectable()
 export class SavedService {
@@ -63,8 +63,8 @@ export class SavedService {
           'word.created_at AS "updatedAt"',
           'word.language_id AS "languageId"',
           'word.user_id AS "userId"',
-          'saved.is_active AS "isSaved"',
-          'like.is_active AS "isLiked"',
+          'COALESCE(saved.is_active, false) AS "isSaved"',
+          'COALESCE(like.is_active, false) AS "isLiked"',
         ])
         .take(pageSize)
         .skip(offset);
