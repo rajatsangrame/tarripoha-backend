@@ -16,6 +16,7 @@ import { Roles } from '../guard/role/roles.decorator';
 import { InsertSavedDto } from './dto/insert-saved-dto';
 import { Saved } from './entity/saved.entity';
 import { GetSavedDto } from './dto/get-saved-dto';
+import { PagingResponse } from 'src/common/interface/PagingResponse';
 
 @Controller('saved')
 @ApiTags('Saved')
@@ -38,7 +39,11 @@ export class SavedController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
-  async getSaved(@Query() dto: GetSavedDto): Promise<Saved[]> {
-    return this.savedService.getSaved(dto);
+  async getSaved(
+    @Query() dto: GetSavedDto,
+    @Request() req,
+  ): Promise<PagingResponse<Saved>> {
+    const userId = req.user.id;
+    return this.savedService.getSaved(userId, dto);
   }
 }

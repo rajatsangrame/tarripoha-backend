@@ -7,6 +7,7 @@ import {
   IsNumber,
   Min,
 } from 'class-validator';
+import { PAGING_SIZE } from 'src/common/constants/postgres.constants';
 
 export class SearchWordDto {
   @IsString()
@@ -29,6 +30,6 @@ export class SearchWordDto {
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @ApiPropertyOptional({ default: 10 })
-  pageSize: number = 10;
+  @ApiPropertyOptional({ default: PAGING_SIZE })
+  pageSize: number = PAGING_SIZE;
 }

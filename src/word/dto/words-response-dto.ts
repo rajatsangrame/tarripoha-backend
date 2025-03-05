@@ -34,29 +34,3 @@ export class WordResponse {
   @ApiProperty({ default: false })
   isSaved: boolean;
 }
-
-export class WordsResponseDto {
-  @ApiProperty()
-  total: number;
-
-  @ApiProperty()
-  pageNo: number;
-
-  @ApiProperty()
-  pageSize: number;
-
-  @ApiProperty({ isArray: true, type: WordResponse })
-  data: WordResponse[];
-
-  constructor(
-    total: number,
-    pageNo: number,
-    pageSize: number,
-    data: WordResponse[],
-  ) {
-    this.total = total;
-    this.pageNo = pageNo;
-    this.pageSize = pageSize;
-    this.data = data;
-  }
-}

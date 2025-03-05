@@ -5,7 +5,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { POSTGRES_ERROR_CODES } from '../common/constants/postgres.constants';
 import { SearchWordDto } from 'src/word/dto/search-word-dto';
-import { WordsResponseDto, WordResponse } from './dto/words-response-dto';
+import { WordResponse } from './dto/words-response-dto';
+import { PagingResponse } from 'src/common/interface/PagingResponse';
 
 @Injectable()
 export class WordService {
@@ -35,7 +36,10 @@ export class WordService {
     }
   }
 
-  async search(userId: number, dto: SearchWordDto): Promise<WordsResponseDto> {
+  async search(
+    userId: number,
+    dto: SearchWordDto,
+  ): Promise<PagingResponse<WordResponse>> {
     try {
       const { query, languageId, pageNo = 1, pageSize = 20 } = dto;
       const offset = (pageNo - 1) * pageSize;
@@ -115,8 +119,7 @@ export class WordService {
         isLiked: word.is_liked,
         isSaved: word.is_saved,
       }));
-
-      return new WordsResponseDto(total, pageNo, pageSize, wordResponse);
+      return new PagingResponse(total, pageNo, pageSize, wordResponse);
     } catch (error) {
       throw error;
     }
