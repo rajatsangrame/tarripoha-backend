@@ -36,6 +36,18 @@ export class WordService {
     }
   }
 
+  async getWord(id: number): Promise<Word> {
+    try {
+      const word = await this.wordRepository.findOneBy({
+        id: id,
+        isActive: true,
+      });
+      return word;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async search(
     userId: number,
     dto: SearchWordDto,

@@ -1,13 +1,15 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { WordService } from './word.service';
 import { Word } from './entity/word.entity';
 import { InsertWordDto } from './dto/insert-word-dto';
@@ -50,6 +52,24 @@ export class WordController {
     @Request() req,
   ): Promise<PagingResponse<WordResponse>> {
     const userId = req.user.id;
+    console.log(userId);
     return this.wordService.search(userId, dto);
+  }
+
+  @Get(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(USER_ROLE.USER)
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'ID of the word to fetch',
+  })
+  async getWord(@Param('id') id: string): Promise<Word> {
+    const wordId = Number(id);
+    if (isNaN(wordId)) {
+      throw new BadRequestException('Invalid word ID');
+    }
+    return this.wordService.getWord(wordId);
   }
 }
