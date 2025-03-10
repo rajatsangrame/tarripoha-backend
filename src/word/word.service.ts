@@ -5,8 +5,9 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { POSTGRES_ERROR_CODES } from '../common/constants/postgres.constants';
 import { SearchWordDto } from 'src/word/dto/search-word-dto';
-import { WordResponse } from './dto/words-response-dto';
+import { WordResponseDto } from './dto/words-response-dto';
 import { PagingResponse } from 'src/common/interface/PagingResponse';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class WordService {
@@ -36,13 +37,32 @@ export class WordService {
     }
   }
 
-  async getWord(id: number): Promise<Word> {
+  async getWord(userId: number, id: number): Promise<WordResponseDto> {
     try {
-      const word = await this.wordRepository.findOneBy({
-        id: id,
-        isActive: true,
+      const queryBuilder = this.wordRepository.createQueryBuilder('word');
+      if (userId) {
+        queryBuilder
+          .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
+          .leftJoin(
+            'like',
+            'l',
+            'l.content_id = word.id AND l.content_type = 1 AND l.user_id = :userId',
+            { userId },
+          )
+          .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved')
+          .leftJoin(
+            'saved',
+            'sv',
+            'sv.content_id = word.id AND sv.content_type = 1 AND sv.user_id = :userId',
+            { userId },
+          );
+      }
+      queryBuilder.where('word.id = :id AND word.is_active = TRUE', { id });
+      const rawWord = await queryBuilder.getRawOne();
+      const wordResponse = plainToInstance(WordResponseDto, rawWord, {
+        excludeExtraneousValues: true,
       });
-      return word;
+      return wordResponse;
     } catch (error) {
       throw error;
     }
@@ -51,7 +71,7 @@ export class WordService {
   async search(
     userId: number,
     dto: SearchWordDto,
-  ): Promise<PagingResponse<WordResponse>> {
+  ): Promise<PagingResponse<WordResponseDto>> {
     try {
       const { query, languageId, pageNo = 1, pageSize = 20 } = dto;
       const offset = (pageNo - 1) * pageSize;
@@ -102,6 +122,7 @@ export class WordService {
           )`,
           { query },
         )
+        .andWhere('word.is_active = TRUE')
         .orderBy('rank', 'DESC')
         .addOrderBy('similarity_score', 'DESC');
 
@@ -111,24 +132,15 @@ export class WordService {
         });
       }
 
-      const [words, total] = await Promise.all([
+      const [rawWords, total] = await Promise.all([
         queryBuilder.offset(offset).limit(pageSize).getRawMany(),
         queryBuilder.getCount(),
       ]);
 
-      const wordResponse: WordResponse[] = words.map((word) => ({
-        id: word.word_id,
-        languageId: word.word_language_id,
-        userId: word.word_user_id,
-        name: word.word_name,
-        meaning: word.word_meaning,
-        englishMeaning: word.word_english_meaning,
-        description: word.word_description,
-        isActive: word.word_is_active,
-        isApproved: word.word_is_approved,
-        isLiked: word.is_liked,
-        isSaved: word.is_saved,
-      }));
+      const wordResponse = plainToInstance(WordResponseDto, rawWords, {
+        excludeExtraneousValues: true,
+      });
+
       return new PagingResponse(total, pageNo, pageSize, wordResponse);
     } catch (error) {
       throw error;

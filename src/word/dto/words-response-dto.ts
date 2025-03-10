@@ -1,36 +1,42 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 
-export class WordResponse {
-  @ApiProperty()
+export class WordResponseDto {
+  @Expose({ name: 'word_id' })
   id: number;
 
-  @ApiProperty()
+  @Expose({ name: 'word_language_id' })
   languageId: number;
 
-  @ApiProperty()
+  @Expose({ name: 'word_user_id' })
   userId: number;
 
-  @ApiProperty()
+  @Expose({ name: 'word_name' })
   name: string;
 
-  @ApiProperty()
+  @Expose({ name: 'word_meaning' })
   meaning: string;
 
-  @ApiProperty({ nullable: true })
-  englishMeaning: string | null;
+  @Expose({ name: 'word_english_meaning' })
+  englishMeaning: string;
 
-  @ApiProperty({ nullable: true })
-  description: string | null;
+  @Expose({ name: 'word_description' })
+  description: string;
 
-  @ApiProperty()
+  @Expose({ name: 'word_is_active' })
   isActive: boolean;
 
-  @ApiProperty()
+  @Expose({ name: 'word_is_approved' })
   isApproved: boolean;
 
-  @ApiProperty({ default: false })
+  @Expose({ name: 'is_liked' })
   isLiked: boolean;
 
-  @ApiProperty({ default: false })
+  @Expose({ name: 'is_saved' })
   isSaved: boolean;
+
+  @Expose({ name: 'word_created_at' })
+  createdAt: Date;
+
+  @Expose({ name: 'word_updated_at' })
+  updatedAt: Date;
 }

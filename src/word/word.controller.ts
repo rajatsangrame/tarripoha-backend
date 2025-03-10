@@ -19,7 +19,7 @@ import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
 import { SearchWordDto } from './dto/search-word-dto';
 import { PagingResponse } from 'src/common/interface/PagingResponse';
-import { WordResponse } from './dto/words-response-dto';
+import { WordResponseDto } from './dto/words-response-dto';
 
 @Controller('word')
 @ApiTags('Word')
@@ -50,9 +50,8 @@ export class WordController {
   async search(
     @Query() dto: SearchWordDto,
     @Request() req,
-  ): Promise<PagingResponse<WordResponse>> {
+  ): Promise<PagingResponse<WordResponseDto>> {
     const userId = req.user.id;
-    console.log(userId);
     return this.wordService.search(userId, dto);
   }
 
@@ -65,11 +64,15 @@ export class WordController {
     required: true,
     description: 'ID of the word to fetch',
   })
-  async getWord(@Param('id') id: string): Promise<Word> {
+  async getWord(
+    @Param('id') id: string,
+    @Request() req,
+  ): Promise<WordResponseDto> {
     const wordId = Number(id);
     if (isNaN(wordId)) {
       throw new BadRequestException('Invalid word ID');
     }
-    return this.wordService.getWord(wordId);
+    const userId = req.user.id;
+    return this.wordService.getWord(userId, wordId);
   }
 }
