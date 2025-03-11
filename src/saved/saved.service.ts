@@ -51,7 +51,7 @@ export class SavedService {
           userId,
         })
         .where(
-          'saved.user_id = :userId AND saved.content_type = :contentType AND w.is_active = TRUE',
+          'saved.user_id = :userId AND saved.content_type = :contentType AND saved.is_active = TRUE AND w.is_active = TRUE',
           { userId, contentType },
         )
         .select(['w.*'])
