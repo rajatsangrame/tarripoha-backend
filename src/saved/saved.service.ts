@@ -5,9 +5,9 @@ import { Saved } from './entity/saved.entity';
 import { InsertSavedDto } from './dto/insert-saved-dto';
 import { GetSavedDto } from './dto/get-saved-dto';
 import { ContentValidator } from '../common/service/content-validation.service';
-import { Word } from 'src/word/entity/word.entity';
 import { PagingResponse } from 'src/common/interface/PagingResponse';
-import { Like } from 'src/like/entity/like.entity';
+import { plainToInstance } from 'class-transformer';
+import { WordResponseDto } from 'src/word/dto/words-response-dto';
 
 @Injectable()
 export class SavedService {
@@ -39,39 +39,34 @@ export class SavedService {
   async getSaved(
     userId: number,
     dto: GetSavedDto,
-  ): Promise<PagingResponse<Saved>> {
+  ): Promise<PagingResponse<WordResponseDto>> {
     try {
       const { pageNo, pageSize, contentType } = dto;
       const offset = (pageNo - 1) * pageSize;
 
-      const queryBuilder = await this.savedRepository
+      const queryBuilder = this.savedRepository
         .createQueryBuilder('saved')
-        .leftJoin(Word, 'word', 'word.id = saved.contentId')
-        .leftJoin(Like, 'like', 'word.id = like.contentId')
-        .where('saved.userId = :userId', { userId })
-        .andWhere('saved.contentType = :contentType', { contentType })
-        .andWhere('saved.isActive = :isActive', { isActive: true })
-        .orderBy('saved.createdAt', 'DESC')
-        .select([
-          'word.id AS id',
-          'word.name AS name',
-          'word.meaning AS meaning',
-          'word.englishMeaning AS "englishMeaning"',
-          'word.description AS description',
-          'word.created_at AS "createdAt"',
-          'word.updated_at AS "updatedAt"',
-          'word.language_id AS "languageId"',
-          'word.user_id AS "userId"',
-          'COALESCE(saved.is_active, false) AS "isSaved"',
-          'COALESCE(like.is_active, false) AS "isLiked"',
-        ]);
-
+        .leftJoin('word', 'w', 'saved.content_id = w.id')
+        .leftJoin('like', 'l', 'l.content_id = w.id AND l.user_id = :userId', {
+          userId,
+        })
+        .where(
+          'saved.user_id = :userId AND saved.content_type = :contentType AND w.is_active = TRUE',
+          { userId, contentType },
+        )
+        .select(['w.*'])
+        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
+        .addSelect('COALESCE(saved.is_active, FALSE)', 'is_saved');
       const [data, total] = await Promise.all([
         queryBuilder.offset(offset).limit(pageSize).getRawMany(),
         queryBuilder.getCount(),
       ]);
 
-      return new PagingResponse(total, pageNo, pageSize, data);
+      const wordResponse = plainToInstance(WordResponseDto, data, {
+        excludeExtraneousValues: true,
+      });
+
+      return new PagingResponse(total, pageNo, pageSize, wordResponse);
     } catch (error) {
       throw error;
     }

@@ -17,6 +17,7 @@ import { InsertSavedDto } from './dto/insert-saved-dto';
 import { Saved } from './entity/saved.entity';
 import { GetSavedDto } from './dto/get-saved-dto';
 import { PagingResponse } from 'src/common/interface/PagingResponse';
+import { WordResponseDto } from 'src/word/dto/words-response-dto';
 
 @Controller('saved')
 @ApiTags('Saved')
@@ -42,7 +43,7 @@ export class SavedController {
   async getSaved(
     @Query() dto: GetSavedDto,
     @Request() req,
-  ): Promise<PagingResponse<Saved>> {
+  ): Promise<PagingResponse<WordResponseDto>> {
     const userId = req.user.id;
     return this.savedService.getSaved(userId, dto);
   }
