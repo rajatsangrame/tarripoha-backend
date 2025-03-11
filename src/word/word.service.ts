@@ -55,7 +55,7 @@ export class WordService {
             { userId },
           )
           .leftJoin('user', 'u', 'u.id = word.user_id')
-          .select(['word.*', 'u.*'])
+          .select(['word.*', 'u.username', 'u.first_name', 'u.last_name'])
           .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
           .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved');
       }
