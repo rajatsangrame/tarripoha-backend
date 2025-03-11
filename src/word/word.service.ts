@@ -54,7 +54,8 @@ export class WordService {
             'sv.content_id = word.id AND sv.content_type = 1 AND sv.user_id = :userId',
             { userId },
           )
-          .select(['word.*'])
+          .leftJoin('user', 'u', 'u.id = word.user_id')
+          .select(['word.*', 'u.*'])
           .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
           .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved');
       }
@@ -64,6 +65,13 @@ export class WordService {
       const wordResponse = plainToInstance(WordResponseDto, rawWord, {
         excludeExtraneousValues: true,
       });
+      if (rawWord.user_id) {
+        wordResponse.user = {
+          username: rawWord.username,
+          firstName: rawWord.first_name,
+          lastName: rawWord.last_name,
+        };
+      }
       return wordResponse;
     } catch (error) {
       throw error;

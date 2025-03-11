@@ -39,4 +39,6 @@ export class WordResponseDto {
 
   @Expose({ name: 'updated_at' })
   updatedAt: Date;
+
+  user: any;
 }
