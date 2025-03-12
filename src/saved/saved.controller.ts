@@ -13,9 +13,9 @@ import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
-import { InsertSavedDto } from './dto/insert-saved-dto';
+import { InsertSavedDto } from './dto/insert-saved.dto';
 import { Saved } from './entity/saved.entity';
-import { GetSavedDto } from './dto/get-saved-dto';
+import { GetSavedDto } from './dto/get-saved.dto';
 import { PagingResponse } from 'src/common/interface/paging-response';
 import { WordResponseDto } from 'src/word/dto/words-response.dto';
 

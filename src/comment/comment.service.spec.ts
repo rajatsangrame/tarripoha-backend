@@ -5,8 +5,8 @@ import { Comment } from './entity/comment.entity';
 import { Word } from '../word/entity/word.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ContentValidator } from '../common/service/content-validation.service';
-import { InsertCommentDto } from './dto/insert-comment-dto';
-import { GetCommentsDto } from './dto/get-comments-dto';
+import { InsertCommentDto } from './dto/insert-comment.dto';
+import { GetCommentsDto } from './dto/get-comments.dto';
 import { BadRequestException } from '@nestjs/common';
 import { ContentType } from '../common/enum/content-type.enum';
 

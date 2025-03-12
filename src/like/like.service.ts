@@ -2,8 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Like } from './entity/like.entity';
-import { InsertLikeDto } from './dto/insert-like-dto';
-import { GetLikesDto } from './dto/get-likes-dto';
+import { InsertLikeDto } from './dto/insert-like.dto';
+import { GetLikesDto } from './dto/get-likes.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
 
 @Injectable()

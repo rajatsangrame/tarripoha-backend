@@ -13,9 +13,9 @@ import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
-import { InsertLikeDto } from './dto/insert-like-dto';
+import { InsertLikeDto } from './dto/insert-like.dto';
 import { Like } from './entity/like.entity';
-import { GetLikesDto } from './dto/get-likes-dto';
+import { GetLikesDto } from './dto/get-likes.dto';
 
 @Controller('like')
 @ApiTags('Like')

@@ -2,8 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entity/comment.entity';
 import { Repository } from 'typeorm';
-import { InsertCommentDto } from './dto/insert-comment-dto';
-import { GetCommentsDto } from './dto/get-comments-dto';
+import { InsertCommentDto } from './dto/insert-comment.dto';
+import { GetCommentsDto } from './dto/get-comments.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
 
 @Injectable()

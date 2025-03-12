@@ -5,8 +5,8 @@ import { Like } from './entity/like.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { BadRequestException } from '@nestjs/common';
-import { InsertLikeDto } from './dto/insert-like-dto';
-import { GetLikesDto } from './dto/get-likes-dto';
+import { InsertLikeDto } from './dto/insert-like.dto';
+import { GetLikesDto } from './dto/get-likes.dto';
 
 describe('LikeService', () => {
   let service: LikeService;

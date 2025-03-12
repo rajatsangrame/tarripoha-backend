@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user-dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { SearchUserDto } from './dto/search-user-dto';
+import { SearchUserDto } from './dto/search-user.dto';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { UserMappingDto } from './dto/user-mapping.dto';
 import { UserRoleMapping } from './entity/user-mappping.entity';

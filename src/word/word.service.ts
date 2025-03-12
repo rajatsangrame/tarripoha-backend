@@ -41,15 +41,15 @@ export class WordService {
   ): Promise<WordResponseDto> {
     try {
       if (_.isEmpty(dto)) {
-        throw new BadRequestException('Noting to update in the request');
+        throw new BadRequestException();
       }
 
       const word = await this.wordRepository.findOne({
-        where: { id: wordId, userId },
+        where: { id: wordId, isActive: true },
       });
 
       if (!word) {
-        throw new NotFoundException('Word not found or unauthorized');
+        throw new NotFoundException('Word not found');
       }
 
       Object.assign(word, dto);

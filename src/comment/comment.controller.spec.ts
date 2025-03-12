@@ -3,8 +3,8 @@ import { CommentController } from './comment.controller';
 import { CommentService } from './comment.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
-import { InsertCommentDto } from './dto/insert-comment-dto';
-import { GetCommentsDto } from './dto/get-comments-dto';
+import { InsertCommentDto } from './dto/insert-comment.dto';
+import { GetCommentsDto } from './dto/get-comments.dto';
 import { Comment } from './entity/comment.entity';
 
 describe('CommentController', () => {

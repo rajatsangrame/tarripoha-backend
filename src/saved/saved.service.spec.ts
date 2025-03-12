@@ -5,8 +5,8 @@ import { Saved } from './entity/saved.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { BadRequestException } from '@nestjs/common';
-import { InsertSavedDto } from './dto/insert-saved-dto';
-import { GetSavedDto } from './dto/get-saved-dto';
+import { InsertSavedDto } from './dto/insert-saved.dto';
+import { GetSavedDto } from './dto/get-saved.dto';
 
 describe('SavedService', () => {
   let service: SavedService;
