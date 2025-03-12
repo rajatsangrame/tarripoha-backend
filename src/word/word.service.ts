@@ -55,9 +55,12 @@ export class WordService {
             { userId },
           )
           .leftJoin('user', 'u', 'u.id = word.user_id')
-          .select(['word.*', 'u.username', 'u.first_name', 'u.last_name'])
+          .select(['word.*'])
           .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
-          .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved');
+          .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved')
+          .addSelect('u.username', 'username')
+          .addSelect('u.first_name', 'first_name')
+          .addSelect('u.last_name', 'last_name');
       }
       queryBuilder.where('word.id = :id AND word.is_active = TRUE', { id });
       const rawWord = await queryBuilder.getRawOne();
