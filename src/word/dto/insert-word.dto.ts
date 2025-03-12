@@ -15,6 +15,12 @@ export class InsertWordDto {
   @Transform(({ value }) => value.trim())
   meaning: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  @Transform(({ value }) => value.trim())
+  englishMeaning: string;
+
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty()
@@ -25,4 +31,10 @@ export class InsertWordDto {
   @ApiPropertyOptional()
   @Transform(({ value }) => value.trim())
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional()
+  @Transform(({ value }) => value.trim())
+  tags?: string;
 }

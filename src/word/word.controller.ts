@@ -4,7 +4,9 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   Post,
+  Put,
   Query,
   Request,
   UseGuards,
@@ -12,14 +14,15 @@ import {
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { WordService } from './word.service';
 import { Word } from './entity/word.entity';
-import { InsertWordDto } from './dto/insert-word-dto';
+import { InsertWordDto } from './dto/insert-word.dto';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
-import { SearchWordDto } from './dto/search-word-dto';
-import { PagingResponse } from 'src/common/interface/PagingResponse';
-import { WordResponseDto } from './dto/words-response-dto';
+import { SearchWordDto } from './dto/search-word.dto';
+import { PagingResponse } from 'src/common/interface/paging-response';
+import { WordResponseDto } from './dto/words-response.dto';
+import { UpdateWordDto } from './dto/update-word.dto';
 
 @Controller('word')
 @ApiTags('Word')
@@ -35,12 +38,17 @@ export class WordController {
     return this.wordService.insertWord(userId, dto);
   }
 
-  @Get('get-words')
+  @Put('update-word/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
-  async getWords(): Promise<Word[]> {
-    return this.wordService.getWords();
+  async updateWord(
+    @Param('id', ParseIntPipe) wordId: number,
+    @Body() dto: UpdateWordDto,
+    @Request() req,
+  ): Promise<WordResponseDto> {
+    const userId = req.user.id;
+    return this.wordService.updateWord(userId, wordId, dto);
   }
 
   @Get('search')

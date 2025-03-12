@@ -5,9 +5,9 @@ import { Saved } from './entity/saved.entity';
 import { InsertSavedDto } from './dto/insert-saved-dto';
 import { GetSavedDto } from './dto/get-saved-dto';
 import { ContentValidator } from '../common/service/content-validation.service';
-import { PagingResponse } from 'src/common/interface/PagingResponse';
+import { PagingResponse } from 'src/common/interface/paging-response';
 import { plainToInstance } from 'class-transformer';
-import { WordResponseDto } from 'src/word/dto/words-response-dto';
+import { WordResponseDto } from 'src/word/dto/words-response.dto';
 
 @Injectable()
 export class SavedService {

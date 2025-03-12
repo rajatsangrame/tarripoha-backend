@@ -3,7 +3,7 @@ import { WordService } from './word.service';
 import { Repository } from 'typeorm';
 import { Word } from './entity/word.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { InsertWordDto } from './dto/insert-word-dto';
+import { InsertWordDto } from './dto/insert-word.dto';
 import { BadRequestException } from '@nestjs/common';
 
 const mockWordRepository = {

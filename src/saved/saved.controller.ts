@@ -16,8 +16,8 @@ import { Roles } from '../guard/role/roles.decorator';
 import { InsertSavedDto } from './dto/insert-saved-dto';
 import { Saved } from './entity/saved.entity';
 import { GetSavedDto } from './dto/get-saved-dto';
-import { PagingResponse } from 'src/common/interface/PagingResponse';
-import { WordResponseDto } from 'src/word/dto/words-response-dto';
+import { PagingResponse } from 'src/common/interface/paging-response';
+import { WordResponseDto } from 'src/word/dto/words-response.dto';
 
 @Controller('saved')
 @ApiTags('Saved')

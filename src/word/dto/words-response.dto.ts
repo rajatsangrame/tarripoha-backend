@@ -22,6 +22,9 @@ export class WordResponseDto {
   @Expose({ name: 'description' })
   description: string;
 
+  @Expose({ name: 'tags' })
+  tags: string;
+
   @Expose({ name: 'is_active' })
   isActive: boolean;
 

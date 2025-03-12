@@ -33,6 +33,9 @@ export class Word {
   @Column({ name: 'description', nullable: true })
   description: string;
 
+  @Column({ name: 'tags', nullable: true })
+  tags: string;
+
   @Column({ name: 'is_active', default: false })
   isActive: boolean;
 

@@ -3,7 +3,7 @@ import { WordController } from './word.controller';
 import { WordService } from './word.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
-import { InsertWordDto } from './dto/insert-word-dto';
+import { InsertWordDto } from './dto/insert-word.dto';
 import { Word } from './entity/word.entity';
 import { ForbiddenException } from '@nestjs/common';
 

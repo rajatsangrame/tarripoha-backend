@@ -1,13 +1,19 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { InsertWordDto } from './dto/insert-word-dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InsertWordDto } from './dto/insert-word.dto';
 import { Word } from './entity/word.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { POSTGRES_ERROR_CODES } from '../common/constants/postgres.constants';
-import { SearchWordDto } from 'src/word/dto/search-word-dto';
-import { WordResponseDto } from './dto/words-response-dto';
-import { PagingResponse } from 'src/common/interface/PagingResponse';
+import { SearchWordDto } from 'src/word/dto/search-word.dto';
+import { WordResponseDto } from './dto/words-response.dto';
+import { PagingResponse } from 'src/common/interface/paging-response';
 import { plainToInstance } from 'class-transformer';
+import { UpdateWordDto } from './dto/update-word.dto';
+import * as _ from 'lodash';
 
 @Injectable()
 export class WordService {
@@ -28,11 +34,31 @@ export class WordService {
     }
   }
 
-  async getWords(): Promise<Word[]> {
+  async updateWord(
+    userId: number,
+    wordId: number,
+    dto: UpdateWordDto,
+  ): Promise<WordResponseDto> {
     try {
-      const words = await this.wordRepository.findBy({ isActive: true });
-      return words;
+      if (_.isEmpty(dto)) {
+        throw new BadRequestException('Noting to update in the request');
+      }
+
+      const word = await this.wordRepository.findOne({
+        where: { id: wordId, userId },
+      });
+
+      if (!word) {
+        throw new NotFoundException('Word not found or unauthorized');
+      }
+
+      Object.assign(word, dto);
+      await this.wordRepository.save(word);
+      return this.getWord(userId, wordId);
     } catch (error) {
+      if (error.code === POSTGRES_ERROR_CODES.UNIQUE_VIOLATION) {
+        throw new BadRequestException('Word already exists');
+      }
       throw error;
     }
   }
