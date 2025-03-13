@@ -16,12 +16,15 @@ import { UpdateWordDto } from './dto/update-word.dto';
 import * as _ from 'lodash';
 import { User } from 'src/user/entity/user.entity';
 import { USER_ROLE } from 'src/guard/role/user-role.enum';
+import { UserRoleMapping } from 'src/user/entity/user-mappping.entity';
 
 @Injectable()
 export class WordService {
   constructor(
     @InjectRepository(Word) private wordRepository: Repository<Word>,
-    @InjectRepository(Word) private userRepository: Repository<User>,
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(UserRoleMapping)
+    private urmRepository: Repository<UserRoleMapping>,
   ) {}
   async insertWord(userId: number, dto: InsertWordDto): Promise<Word> {
     try {
@@ -71,11 +74,18 @@ export class WordService {
       id: userId,
       isActive: true,
     });
-    const filterActiveWords =
-      user?.roles.some((role: string) =>
-        ([USER_ROLE.ADMIN, USER_ROLE.EDITOR] as string[]).includes(role),
-      ) || true;
-    console.log({ filterActiveWords, roles: user?.roles });
+    const userRoles = [];
+    if (user) {
+      const mappings = await this.urmRepository.findBy({ userId });
+      mappings.forEach((e) => {
+        userRoles.push(e.userRole.role);
+      });
+    }
+
+    // Do not filter active words if user has admin or editor role.
+    const filterActiveWords = !userRoles.some((role: string) =>
+      [USER_ROLE.ADMIN.toString(), USER_ROLE.EDITOR.toString()].includes(role),
+    );
     try {
       const queryBuilder = this.wordRepository.createQueryBuilder('word');
       if (userId) {
