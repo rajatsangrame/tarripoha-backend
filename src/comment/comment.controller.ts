@@ -16,6 +16,7 @@ import { Roles } from '../guard/role/roles.decorator';
 import { InsertCommentDto } from './dto/insert-comment.dto';
 import { Comment } from './entity/comment.entity';
 import { GetCommentsDto } from './dto/get-comments.dto';
+import { PagingResponse } from 'src/common/interface/paging-response';
 
 @Controller('comment')
 @ApiTags('Comment')
@@ -38,7 +39,9 @@ export class CommentController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
-  async getComments(@Query() dto: GetCommentsDto): Promise<Comment[]> {
+  async getComments(
+    @Query() dto: GetCommentsDto,
+  ): Promise<PagingResponse<Comment>> {
     return this.commentService.getComments(dto);
   }
 }

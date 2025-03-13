@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { InsertCommentDto } from './dto/insert-comment.dto';
 import { GetCommentsDto } from './dto/get-comments.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
+import { PagingResponse } from 'src/common/interface/paging-response';
 
 @Injectable()
 export class CommentService {
@@ -31,27 +32,20 @@ export class CommentService {
     }
   }
 
-  async getComments(dto: GetCommentsDto): Promise<Comment[]> {
+  async getComments(dto: GetCommentsDto): Promise<PagingResponse<Comment>> {
     try {
-      const queryBuilder = this.commentRepository.createQueryBuilder('comment');
-
-      queryBuilder.where('comment.contentId = :contentId', {
-        contentId: dto.contentId,
+      const { pageNo = 1, pageSize = 20, contentId, contentType } = dto;
+      const offset = (pageNo - 1) * pageSize;
+      const [comments, count] = await this.commentRepository.findAndCount({
+        where: {
+          contentId,
+          contentType,
+          isActive: true,
+        },
+        skip: offset,
+        take: pageSize,
       });
-      queryBuilder.andWhere('comment.contentType = :contentType', {
-        contentType: dto.contentType,
-      });
-      queryBuilder.andWhere('comment.isActive = :isActive', {
-        isActive: true,
-      });
-
-      if (dto.userId) {
-        queryBuilder.andWhere('comment.userId = :userId', {
-          userId: dto.userId,
-        });
-      }
-      const comments = await queryBuilder.getMany();
-      return comments;
+      return new PagingResponse(count, pageNo, pageSize, comments);
     } catch (error) {
       throw error;
     }
