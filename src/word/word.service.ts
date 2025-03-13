@@ -14,11 +14,14 @@ import { PagingResponse } from 'src/common/interface/paging-response';
 import { plainToInstance } from 'class-transformer';
 import { UpdateWordDto } from './dto/update-word.dto';
 import * as _ from 'lodash';
+import { User } from 'src/user/entity/user.entity';
+import { USER_ROLE } from 'src/guard/role/user-role.enum';
 
 @Injectable()
 export class WordService {
   constructor(
     @InjectRepository(Word) private wordRepository: Repository<Word>,
+    @InjectRepository(Word) private userRepository: Repository<User>,
   ) {}
   async insertWord(userId: number, dto: InsertWordDto): Promise<Word> {
     try {
@@ -45,7 +48,7 @@ export class WordService {
       }
 
       const word = await this.wordRepository.findOne({
-        where: { id: wordId, isActive: true },
+        where: { id: wordId },
       });
 
       if (!word) {
@@ -64,6 +67,15 @@ export class WordService {
   }
 
   async getWord(userId: number, id: number): Promise<WordResponseDto> {
+    const user = await this.userRepository.findOneBy({
+      id: userId,
+      isActive: true,
+    });
+    const filterActiveWords =
+      user?.roles.some((role: string) =>
+        ([USER_ROLE.ADMIN, USER_ROLE.EDITOR] as string[]).includes(role),
+      ) || true;
+    console.log({ filterActiveWords, roles: user?.roles });
     try {
       const queryBuilder = this.wordRepository.createQueryBuilder('word');
       if (userId) {
@@ -88,8 +100,13 @@ export class WordService {
           .addSelect('u.first_name', 'first_name')
           .addSelect('u.last_name', 'last_name');
       }
-      queryBuilder.where('word.id = :id AND word.is_active = TRUE', { id });
+      queryBuilder.where('word.id = :id', { id });
+      if (filterActiveWords) queryBuilder.andWhere('word.is_active = TRUE');
       const rawWord = await queryBuilder.getRawOne();
+
+      if (!rawWord) {
+        throw new NotFoundException('Word not found');
+      }
 
       const wordResponse = plainToInstance(WordResponseDto, rawWord, {
         excludeExtraneousValues: true,

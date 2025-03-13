@@ -41,7 +41,7 @@ export class WordController {
   @Put('update-word/:id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(USER_ROLE.USER)
+  @Roles(USER_ROLE.ADMIN)
   async updateWord(
     @Param('id', ParseIntPipe) wordId: number,
     @Body() dto: UpdateWordDto,

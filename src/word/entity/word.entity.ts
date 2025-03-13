@@ -4,11 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
 } from 'typeorm';
-import { Language } from './language.entity';
-import { User } from 'src/user/entity/user.entity';
 
 @Entity({ name: 'word' })
 export class Word {
@@ -47,12 +43,4 @@ export class Word {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  @ManyToOne(() => Language, { eager: true })
-  @JoinColumn({ name: 'language_id' })
-  language: Language;
-
-  @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
 }

@@ -21,4 +21,7 @@ export class UpdateWordDto {
 
   @IsOptional()
   isActive?: boolean;
+
+  @IsOptional()
+  isApproved?: boolean;
 }
