@@ -39,9 +39,8 @@ export class CommentController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
-  async getComments(
-    @Query() dto: GetCommentsDto,
-  ): Promise<PagingResponse<Comment>> {
-    return this.commentService.getComments(dto);
+  async getComments(@Query() dto: GetCommentsDto, @Request() req) {
+    const userId = req.user.id;
+    return this.commentService.getComments(userId, dto);
   }
 }

@@ -32,20 +32,52 @@ export class CommentService {
     }
   }
 
-  async getComments(dto: GetCommentsDto): Promise<PagingResponse<Comment>> {
+  async getComments(userId: number, dto: GetCommentsDto) {
     try {
       const { pageNo = 1, pageSize = 20, contentId, contentType } = dto;
       const offset = (pageNo - 1) * pageSize;
-      const [comments, count] = await this.commentRepository.findAndCount({
-        where: {
-          contentId,
-          contentType,
-          isActive: true,
-        },
-        skip: offset,
-        take: pageSize,
-      });
-      return new PagingResponse(count, pageNo, pageSize, comments);
+
+      if (userId) {
+        const [comments, count] = await this.commentRepository.findAndCount({
+          where: {
+            contentId,
+            contentType,
+            isActive: true,
+          },
+          skip: offset,
+          take: pageSize,
+        });
+        return new PagingResponse(count, pageNo, pageSize, comments);
+      }
+
+      const queryBuilder = await this.commentRepository
+        .createQueryBuilder('comment')
+        .leftJoin('user', 'u', 'u.id = comment.userId')
+        .leftJoin(
+          'like',
+          'l',
+          'l.contentId = comment.id AND l.contentType = 2 AND l.userId = :userId',
+          { userId },
+        )
+        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
+        .addSelect('u.username', 'username')
+        .addSelect('u.first_name', 'first_name')
+        .addSelect('u.last_name', 'last_name')
+        .where('comment.contentId = :contentId', { contentId })
+        .andWhere('comment.contentType = :contentType', { contentType })
+        .andWhere('comment.isActive = TRUE')
+        .skip(offset)
+        .take(pageSize)
+        .orderBy('comment.createdAt ASC');
+
+      const [comments, total] = await Promise.all([
+        queryBuilder.offset(offset).limit(pageSize).getRawMany(),
+        queryBuilder.getCount(),
+      ]);
+
+      console.log(comments);
+
+      return new PagingResponse(total, pageNo, pageSize, comments);
     } catch (error) {
       throw error;
     }
