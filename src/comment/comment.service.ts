@@ -6,6 +6,8 @@ import { InsertCommentDto } from './dto/insert-comment.dto';
 import { GetCommentsDto } from './dto/get-comments.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { PagingResponse } from 'src/common/interface/paging-response';
+import { CommentResponseDto } from './dto/comment-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CommentService {
@@ -37,7 +39,7 @@ export class CommentService {
       const { pageNo = 1, pageSize = 20, contentId, contentType } = dto;
       const offset = (pageNo - 1) * pageSize;
 
-      if (userId) {
+      if (!userId) {
         const [comments, count] = await this.commentRepository.findAndCount({
           where: {
             contentId,
@@ -52,6 +54,7 @@ export class CommentService {
 
       const queryBuilder = await this.commentRepository
         .createQueryBuilder('comment')
+        .select(['comment.*'])
         .leftJoin('user', 'u', 'u.id = comment.userId')
         .leftJoin(
           'like',
@@ -68,16 +71,18 @@ export class CommentService {
         .andWhere('comment.isActive = TRUE')
         .skip(offset)
         .take(pageSize)
-        .orderBy('comment.createdAt ASC');
+        .orderBy('comment.createdAt', 'ASC');
 
       const [comments, total] = await Promise.all([
         queryBuilder.offset(offset).limit(pageSize).getRawMany(),
         queryBuilder.getCount(),
       ]);
 
-      console.log(comments);
+      const commentResponse = plainToInstance(CommentResponseDto, comments, {
+        excludeExtraneousValues: true,
+      });
 
-      return new PagingResponse(total, pageNo, pageSize, comments);
+      return new PagingResponse(total, pageNo, pageSize, commentResponse);
     } catch (error) {
       throw error;
     }

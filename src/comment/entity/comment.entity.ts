@@ -14,7 +14,7 @@ export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'name' })
+  @Column({ name: 'text' })
   text: string;
 
   @Column({ name: 'user_id' })
