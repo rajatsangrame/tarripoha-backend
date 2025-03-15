@@ -40,19 +40,6 @@ export class CommentService {
       const { pageNo = 1, pageSize = 20, contentId, contentType } = dto;
       const offset = (pageNo - 1) * pageSize;
 
-      if (!userId) {
-        const [comments, count] = await this.commentRepository.findAndCount({
-          where: {
-            contentId,
-            contentType,
-            isActive: true,
-          },
-          skip: offset,
-          take: pageSize,
-        });
-        return new PagingResponse(count, pageNo, pageSize, comments);
-      }
-
       const queryBuilder = await this.commentRepository
         .createQueryBuilder('comment')
         .select(['comment.*'])

@@ -16,6 +16,7 @@ import { Roles } from '../guard/role/roles.decorator';
 import { InsertLikeDto } from './dto/insert-like.dto';
 import { Like } from './entity/like.entity';
 import { GetLikesDto } from './dto/get-likes.dto';
+import { LikeResponseDto } from './dto/like-response.dto';
 
 @Controller('like')
 @ApiTags('Like')
@@ -26,7 +27,10 @@ export class LikeController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
-  async insertLike(@Body() dto: InsertLikeDto, @Request() req): Promise<Like> {
+  async insertLike(
+    @Body() dto: InsertLikeDto,
+    @Request() req,
+  ): Promise<LikeResponseDto> {
     const userId = req.user.id;
     return this.likeService.insertLike(userId, dto);
   }

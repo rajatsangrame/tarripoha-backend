@@ -5,6 +5,7 @@ import { Like } from './entity/like.entity';
 import { InsertLikeDto } from './dto/insert-like.dto';
 import { GetLikesDto } from './dto/get-likes.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
+import { LikeResponseDto } from './dto/like-response.dto';
 
 @Injectable()
 export class LikeService {
@@ -13,11 +14,15 @@ export class LikeService {
     private readonly contentValidator: ContentValidator,
   ) {}
 
-  async insertLike(userId: number, dto: InsertLikeDto): Promise<Like> {
+  async insertLike(
+    userId: number,
+    dto: InsertLikeDto,
+  ): Promise<LikeResponseDto> {
     try {
+      const { contentType, contentId } = dto;
       const { isValid, message } = await this.contentValidator.validateContent(
-        dto.contentType,
-        dto.contentId,
+        contentType,
+        contentId,
       );
       if (!isValid) {
         throw new BadRequestException(message);
@@ -27,7 +32,19 @@ export class LikeService {
       await this.likeRepository.upsert(likeData, {
         conflictPaths: ['userId', 'contentId', 'contentType'],
       });
-      return like;
+      const totalLikes = await this.likeRepository.countBy({
+        contentType,
+        contentId,
+        isActive: true,
+      });
+      const likeResponse = new LikeResponseDto(
+        like.userId,
+        like.contentId,
+        like.contentType,
+        totalLikes,
+        like.isActive,
+      );
+      return likeResponse;
     } catch (error) {
       throw error;
     }
