@@ -63,14 +63,24 @@ export class CommentService {
           'l.contentId = comment.id AND l.contentType = :type AND l.userId = :userId',
           { userId, type: ContentType.COMMENT },
         )
-        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
+        .leftJoin(
+          'like',
+          'l2',
+          'l2.contentId = comment.id AND l.contentType = :type AND l.isActive = TRUE',
+          { type: ContentType.COMMENT },
+        )
         .addSelect('u.username', 'username')
         .addSelect('u.first_name', 'first_name')
         .addSelect('u.last_name', 'last_name')
+        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
+        .addSelect('COALESCE(COUNT(*), 0)', 'total_likes')
         .where('comment.contentId = :contentId', { contentId })
         .andWhere('comment.contentType = :contentType', { contentType })
         .andWhere('comment.isActive = TRUE')
-        .orderBy('comment.createdAt', 'ASC');
+        .orderBy('comment.createdAt', 'ASC')
+        .groupBy(
+          'comment.id, u.username, u.first_name, u.last_name, l.is_active',
+        );
 
       const [comments, total] = await Promise.all([
         queryBuilder.offset(offset).limit(pageSize).getRawMany(),
