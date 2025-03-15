@@ -8,6 +8,7 @@ import { ContentValidator } from '../common/service/content-validation.service';
 import { PagingResponse } from 'src/common/interface/paging-response';
 import { CommentResponseDto } from './dto/comment-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { ContentType } from 'src/common/enum/content-type.enum';
 
 @Injectable()
 export class CommentService {
@@ -59,8 +60,8 @@ export class CommentService {
         .leftJoin(
           'like',
           'l',
-          'l.contentId = comment.id AND l.contentType = 2 AND l.userId = :userId',
-          { userId },
+          'l.contentId = comment.id AND l.contentType = :type AND l.userId = :userId',
+          { userId, type: ContentType.COMMENT },
         )
         .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
         .addSelect('u.username', 'username')
@@ -69,8 +70,6 @@ export class CommentService {
         .where('comment.contentId = :contentId', { contentId })
         .andWhere('comment.contentType = :contentType', { contentType })
         .andWhere('comment.isActive = TRUE')
-        .skip(offset)
-        .take(pageSize)
         .orderBy('comment.createdAt', 'ASC');
 
       const [comments, total] = await Promise.all([

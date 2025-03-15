@@ -19,6 +19,9 @@ export class CommentResponseDto {
   @Expose({ name: 'is_liked' })
   isLiked: boolean;
 
+  @Expose({ name: 'total_likes' })
+  totalLikes: number;
+
   @Expose({ name: 'created_at' })
   createdAt: Date;
 
