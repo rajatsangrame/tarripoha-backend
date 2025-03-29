@@ -8,9 +8,10 @@ The source code consist of the following:
 
 - [Nest JS Framework](https://docs.nestjs.com) (JWT Passport, Roles, TypeORM etc are implemented)
 - [PostgreSQL](https://www.postgresql.org)
+- [Docker](https://www.docker.com)
 - [Jest](https://jestjs.io)
 - [Swagger](https://swagger.io)
-- [CI-CD for Release Deployment to AWS ECS Task, ECR Image, Load Balancer and Code Deploy](https://docs.github.com/en/actions/use-cases-and-examples/deploying/deploying-to-amazon-elastic-container-service)
+- [CI-CD for Release Deployment to AWS ECS Task, ECR Image, Application Load Balancer and Code Deploy](https://docs.github.com/en/actions/use-cases-and-examples/deploying/deploying-to-amazon-elastic-container-service)
 - [Used Github Actions to creating Docker Build, Running Test Cases and Deploying the ECS](https://github.com/rajatsangrame/tarripoha-backend/actions)
 
 
