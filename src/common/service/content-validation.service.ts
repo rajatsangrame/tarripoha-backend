@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ContentType } from '../enum/content-type.enum';
-import { Word } from '../../word/entity/word.entity';
-import { Comment } from '../../comment/entity/comment.entity';
+import { Word } from '../../words/entity/word.entity';
+import { Comment } from '../../comments/entity/comment.entity';
 
 @Injectable()
 export class ContentValidator {

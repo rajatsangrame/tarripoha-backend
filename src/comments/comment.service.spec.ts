@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CommentService } from './comment.service';
 import { Repository } from 'typeorm';
 import { Comment } from './entity/comment.entity';
-import { Word } from '../word/entity/word.entity';
+import { Word } from '../words/entity/word.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { InsertCommentDto } from './dto/insert-comment.dto';

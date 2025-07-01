@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -24,12 +25,12 @@ import { PagingResponse } from 'src/common/interface/paging-response';
 import { WordResponseDto } from './dto/words-response.dto';
 import { UpdateWordDto } from './dto/update-word.dto';
 
-@Controller('word')
-@ApiTags('Word')
+@Controller('words')
+@ApiTags('Words')
 export class WordController {
   constructor(private wordService: WordService) {}
 
-  @Post('insert-word')
+  @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
@@ -38,7 +39,7 @@ export class WordController {
     return this.wordService.insertWord(userId, dto);
   }
 
-  @Put('update-word/:id')
+  @Patch(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.ADMIN)
@@ -51,7 +52,7 @@ export class WordController {
     return this.wordService.updateWord(userId, wordId, dto);
   }
 
-  @Get('search')
+  @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)

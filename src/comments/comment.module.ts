@@ -3,7 +3,7 @@ import { CommentService } from './comment.service';
 import { Comment } from './entity/comment.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommentController } from './comment.controller';
-import { Word } from 'src/word/entity/word.entity';
+import { Word } from 'src/words/entity/word.entity';
 import { ContentValidator } from 'src/common/service/content-validation.service';
 
 @Module({

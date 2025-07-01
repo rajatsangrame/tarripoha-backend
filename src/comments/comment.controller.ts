@@ -18,12 +18,12 @@ import { Comment } from './entity/comment.entity';
 import { GetCommentsDto } from './dto/get-comments.dto';
 import { PagingResponse } from 'src/common/interface/paging-response';
 
-@Controller('comment')
-@ApiTags('Comment')
+@Controller('comments')
+@ApiTags('Comments')
 export class CommentController {
   constructor(private commentService: CommentService) {}
 
-  @Post('insert-comment')
+  @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
@@ -35,7 +35,7 @@ export class CommentController {
     return this.commentService.insertComment(userId, dto);
   }
 
-  @Get('get-comments')
+  @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)

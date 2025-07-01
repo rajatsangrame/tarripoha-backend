@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ContentValidator } from './content-validation.service';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Word } from '../../word/entity/word.entity';
-import { Comment } from '../../comment/entity/comment.entity';
+import { Word } from '../../words/entity/word.entity';
+import { Comment } from '../../comments/entity/comment.entity';
 import { ContentType } from '../enum/content-type.enum';
 
 describe('ContentValidator', () => {

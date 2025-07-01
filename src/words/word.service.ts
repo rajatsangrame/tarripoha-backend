@@ -8,7 +8,7 @@ import { Word } from './entity/word.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { POSTGRES_ERROR_CODES } from '../common/constants/postgres.constants';
-import { SearchWordDto } from 'src/word/dto/search-word.dto';
+import { SearchWordDto } from 'src/words/dto/search-word.dto';
 import { WordResponseDto } from './dto/words-response.dto';
 import { PagingResponse } from 'src/common/interface/paging-response';
 import { plainToInstance } from 'class-transformer';
