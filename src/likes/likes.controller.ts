@@ -1,4 +1,4 @@
-import { LikeService } from './like.service';
+import { LikeService } from './likes.service';
 import {
   Body,
   Controller,
@@ -18,12 +18,12 @@ import { Like } from './entity/like.entity';
 import { GetLikesDto } from './dto/get-likes.dto';
 import { LikeResponseDto } from './dto/like-response.dto';
 
-@Controller('like')
-@ApiTags('Like')
+@Controller('likes')
+@ApiTags('Likes')
 export class LikeController {
   constructor(private likeService: LikeService) {}
 
-  @Post('insert-like')
+  @Post()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
@@ -35,7 +35,7 @@ export class LikeController {
     return this.likeService.insertLike(userId, dto);
   }
 
-  @Get('get-likes')
+  @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)

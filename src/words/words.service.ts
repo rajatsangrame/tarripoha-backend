@@ -91,24 +91,24 @@ export class WordService {
       if (userId) {
         queryBuilder
           .leftJoin(
-            'like',
+            'likes',
             'l',
-            'l.content_id = word.id AND l.content_type = 1 AND l.user_id = :userId',
-            { userId },
+            'l.content_type = :contentType AND l.user_id = :userId',
+            { contentType: 'word', userId },
           )
           .leftJoin(
-            'saved',
+            'saved_words',
             'sv',
-            'sv.content_id = word.id AND sv.content_type = 1 AND sv.user_id = :userId',
+            'sv.user_id = :userId',
             { userId },
           )
-          .leftJoin('user', 'u', 'u.id = word.user_id')
+          // .leftJoin('user', 'u', 'u.id = word.user_id')
           .select(['word.*'])
-          .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
-          .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved')
-          .addSelect('u.username', 'username')
-          .addSelect('u.first_name', 'first_name')
-          .addSelect('u.last_name', 'last_name');
+          .addSelect('CASE WHEN l.id IS NOT NULL THEN true ELSE false END', 'is_liked')
+          .addSelect('CASE WHEN sv.id IS NOT NULL THEN true ELSE false END', 'is_saved')
+          // .addSelect('u.username', 'username')
+          // .addSelect('u.first_name', 'first_name')
+          // .addSelect('u.last_name', 'last_name');
       }
       queryBuilder.where('word.id = :id', { id });
       if (filterActiveWords) queryBuilder.andWhere('word.is_active = TRUE');
@@ -141,22 +141,22 @@ export class WordService {
     try {
       const { query, languageId, pageNo = 1, pageSize = 20 } = dto;
       const offset = (pageNo - 1) * pageSize;
-      const queryBuilder = this.wordRepository.createQueryBuilder('word');
+      const queryBuilder = this.wordRepository.createQueryBuilder('words');
       if (userId) {
         queryBuilder
           .leftJoin(
-            'like',
+            'likes',
             'l',
-            'l.content_id = word.id AND l.content_type = 1 AND l.user_id = :userId',
-            { userId },
+            'l.content_type = :type AND l.user_id = :userId',
+            { userId, type: 'word' },
           )
           .leftJoin(
-            'saved',
+            'saved_words',
             'sv',
-            'sv.content_id = word.id AND sv.content_type = 1 AND sv.user_id = :userId',
+            'sv.word_id = word.id AND AND sv.user_id = :userId',
             { userId },
           )
-          .select(['word.*'])
+          .select(['words.*'])
           .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
           .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved');
       }

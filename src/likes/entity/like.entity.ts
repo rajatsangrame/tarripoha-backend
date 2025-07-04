@@ -9,7 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-@Entity({ name: 'like' })
+@Entity({ name: 'likes' })
 export class Like {
   @PrimaryGeneratedColumn()
   id: number;

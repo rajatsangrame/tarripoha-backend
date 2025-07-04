@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { LikeService } from './like.service';
-import { LikeController } from './like.controller';
+import { LikeService } from './likes.service';
+import { LikeController } from './likes.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Like } from './entity/like.entity';
 import { Word } from 'src/words/entity/word.entity';

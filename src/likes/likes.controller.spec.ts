@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LikeController } from './like.controller';
-import { LikeService } from './like.service';
+import { LikeController } from './likes.controller';
+import { LikeService } from './likes.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { InsertLikeDto } from './dto/insert-like.dto';

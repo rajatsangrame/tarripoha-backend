@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommentController } from './comment.controller';
-import { CommentService } from './comment.service';
+import { CommentController } from './comments.controller';
+import { CommentService } from './comments.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { InsertCommentDto } from './dto/insert-comment.dto';

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommentService } from './comment.service';
+import { CommentService } from './comments.service';
 import { Repository } from 'typeorm';
 import { Comment } from './entity/comment.entity';
 import { Word } from '../words/entity/word.entity';

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WordController } from './word.controller';
-import { WordService } from './word.service';
+import { WordController } from './words.controller';
+import { WordService } from './words.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { InsertWordDto } from './dto/insert-word.dto';

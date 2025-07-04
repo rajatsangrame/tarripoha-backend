@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CommentService } from './comment.service';
+import { CommentService } from './comments.service';
 import { Comment } from './entity/comment.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommentController } from './comment.controller';
+import { CommentController } from './comments.controller';
 import { Word } from 'src/words/entity/word.entity';
 import { ContentValidator } from 'src/common/service/content-validation.service';
 

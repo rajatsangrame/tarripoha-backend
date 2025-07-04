@@ -1,12 +1,15 @@
+import { User } from 'src/user/entity/user.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 
-@Entity({ name: 'word' })
+@Entity({ name: 'words' })
 export class Word {
   @PrimaryGeneratedColumn()
   id: number;
@@ -43,4 +46,8 @@ export class Word {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }

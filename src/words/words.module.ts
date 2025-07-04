@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { WordController } from './word.controller';
-import { WordService } from './word.service';
+import { WordController } from './words.controller';
+import { WordService } from './words.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Word } from './entity/word.entity';
 import { User } from 'src/user/entity/user.entity';

@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
-import { WordService } from './word.service';
+import { WordService } from './words.service';
 import { Word } from './entity/word.entity';
 import { InsertWordDto } from './dto/insert-word.dto';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
@@ -28,7 +28,7 @@ import { UpdateWordDto } from './dto/update-word.dto';
 @Controller('words')
 @ApiTags('Words')
 export class WordController {
-  constructor(private wordService: WordService) {}
+  constructor(private wordService: WordService) { }
 
   @Post()
   @ApiBearerAuth()
@@ -37,19 +37,6 @@ export class WordController {
   async insertWord(@Body() dto: InsertWordDto, @Request() req): Promise<Word> {
     const userId = req.user.id;
     return this.wordService.insertWord(userId, dto);
-  }
-
-  @Patch(':id')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(USER_ROLE.ADMIN)
-  async updateWord(
-    @Param('id', ParseIntPipe) wordId: number,
-    @Body() dto: UpdateWordDto,
-    @Request() req,
-  ): Promise<WordResponseDto> {
-    const userId = req.user.id;
-    return this.wordService.updateWord(userId, wordId, dto);
   }
 
   @Get()
@@ -83,5 +70,18 @@ export class WordController {
     }
     const userId = req.user.id;
     return this.wordService.getWord(userId, wordId);
+  }
+
+  @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(USER_ROLE.ADMIN)
+  async updateWord(
+    @Param('id', ParseIntPipe) wordId: number,
+    @Body() dto: UpdateWordDto,
+    @Request() req,
+  ): Promise<WordResponseDto> {
+    const userId = req.user.id;
+    return this.wordService.updateWord(userId, wordId, dto);
   }
 }

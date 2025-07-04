@@ -5,11 +5,11 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { NestJsTypeOrmModule } from './common/modules/typeorm/typeorm.module';
-import { WordModule } from './words/word.module';
-import { CommentController } from './comments/comment.controller';
-import { CommentModule } from './comments/comment.module';
-import { LikeController } from './like/like.controller';
-import { LikeModule } from './like/like.module';
+import { WordModule } from './words/words.module';
+import { CommentController } from './comments/comments.controller';
+import { CommentModule } from './comments/comments.module';
+import { LikeController } from './likes/likes.controller';
+import { LikeModule } from './likes/likes.module';
 import { SavedModule } from './saved/saved.module';
 import { SavedController } from './saved/saved.controller';
 

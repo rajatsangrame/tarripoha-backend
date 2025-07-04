@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WordService } from './word.service';
+import { WordService } from './words.service';
 import { Repository } from 'typeorm';
 import { Word } from './entity/word.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
