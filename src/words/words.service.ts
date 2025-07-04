@@ -25,7 +25,7 @@ export class WordService {
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(UserRoleMapping)
     private urmRepository: Repository<UserRoleMapping>,
-  ) {}
+  ) { }
   async insertWord(userId: number, dto: InsertWordDto): Promise<Word> {
     try {
       const wordData = { ...dto, userId };
@@ -90,25 +90,32 @@ export class WordService {
       const queryBuilder = this.wordRepository.createQueryBuilder('word');
       if (userId) {
         queryBuilder
-          .leftJoin(
-            'likes',
-            'l',
-            'l.content_type = :contentType AND l.user_id = :userId',
-            { contentType: 'word', userId },
-          )
-          .leftJoin(
-            'saved_words',
-            'sv',
-            'sv.user_id = :userId',
-            { userId },
-          )
-          // .leftJoin('user', 'u', 'u.id = word.user_id')
+          .leftJoin('user', 'u', 'u.id = word.user_id')
           .select(['word.*'])
-          .addSelect('CASE WHEN l.id IS NOT NULL THEN true ELSE false END', 'is_liked')
-          .addSelect('CASE WHEN sv.id IS NOT NULL THEN true ELSE false END', 'is_saved')
-          // .addSelect('u.username', 'username')
-          // .addSelect('u.first_name', 'first_name')
-          // .addSelect('u.last_name', 'last_name');
+          .addSelect(
+            `EXISTS(
+            SELECT 1 FROM likes l 
+            WHERE l.content_id = word.id 
+            AND l.content_type = :contentType 
+            AND l.user_id = :userId
+          )`,
+            'is_liked'
+          )
+          .addSelect(
+            `EXISTS(
+            SELECT 1 FROM saved_words sv 
+            WHERE sv.word_id = word.id 
+            AND sv.user_id = :userId
+          )`,
+            'is_saved'
+          )
+          .addSelect([
+            'u.username as username',
+            'u.first_name as first_name',
+            'u.last_name as last_name',
+          ])
+          .setParameter('contentType', 'word')
+          .setParameter('userId', userId);
       }
       queryBuilder.where('word.id = :id', { id });
       if (filterActiveWords) queryBuilder.andWhere('word.is_active = TRUE');
