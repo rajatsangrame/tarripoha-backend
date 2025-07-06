@@ -40,8 +40,6 @@ export class ContentValidator {
         });
         if (!comment) {
           return { isValid: false, message: 'Content does not exists.' };
-        } else if (!comment.isActive) {
-          return { isValid: false, message: 'Content is not active.' };
         }
         return { isValid: true };
       }

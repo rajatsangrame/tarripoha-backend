@@ -13,9 +13,6 @@ export class CommentResponseDto {
   @Expose({ name: 'content_type' })
   contentType: number;
 
-  @Expose({ name: 'is_active' })
-  isActive: boolean;
-
   @Expose({ name: 'is_liked' })
   isLiked: boolean;
 

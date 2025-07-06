@@ -26,9 +26,6 @@ export class Comment {
   @Column({ name: 'content_type' })
   contentType: string;
 
-  @Column({ name: 'is_active', default: true })
-  isActive: boolean;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

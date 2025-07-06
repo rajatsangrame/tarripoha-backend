@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Request,
@@ -35,11 +36,11 @@ export class CommentController {
     return this.commentService.insertComment(userId, dto);
   }
 
-  @Get()
+  @Get(':contentType/:contentId')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.USER)
-  async getComments(@Query() dto: GetCommentsDto, @Request() req) {
+  async getComments(@Param() dto: GetCommentsDto, @Request() req) {
     const userId = req.user.id;
     return this.commentService.getComments(userId, dto);
   }

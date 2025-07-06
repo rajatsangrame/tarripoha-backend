@@ -15,7 +15,7 @@ export class CommentService {
   constructor(
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
     private readonly contentValidator: ContentValidator,
-  ) {}
+  ) { }
 
   async insertComment(userId: number, dto: InsertCommentDto): Promise<Comment> {
     try {
@@ -40,34 +40,37 @@ export class CommentService {
       const { pageNo = 1, pageSize = 20, contentId, contentType } = dto;
       const offset = (pageNo - 1) * pageSize;
 
-      const queryBuilder = await this.commentRepository
+      const queryBuilder = this.commentRepository
         .createQueryBuilder('comment')
-        .select(['comment.*'])
-        .leftJoin('user', 'u', 'u.id = comment.userId')
+        .leftJoin('user', 'u', 'u.id = comment.user_id')
         .leftJoin(
-          'like',
-          'l',
-          'l.contentId = comment.id AND l.contentType = :type AND l.userId = :userId',
-          { userId, type: ContentType.COMMENT },
+          'likes',
+          'user_like',
+          'user_like.content_id = comment.id AND user_like.content_type = :commentContentType AND user_like.user_id = :userId'
         )
         .leftJoin(
-          'like',
-          'l2',
-          'l2.contentId = comment.id AND l.contentType = :type AND l.isActive = TRUE',
-          { type: ContentType.COMMENT },
+          'likes',
+          'total_likes',
+          'total_likes.content_id = comment.id AND total_likes.content_type = :commentContentType'
         )
-        .addSelect('u.username', 'username')
-        .addSelect('u.first_name', 'first_name')
-        .addSelect('u.last_name', 'last_name')
-        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
-        .addSelect('COALESCE(COUNT(*), 0)', 'total_likes')
-        .where('comment.contentId = :contentId', { contentId })
-        .andWhere('comment.contentType = :contentType', { contentType })
-        .andWhere('comment.isActive = TRUE')
-        .orderBy('comment.createdAt', 'ASC')
-        .groupBy(
-          'comment.id, u.username, u.first_name, u.last_name, l.is_active',
-        );
+        .select([
+          'comment.*',
+          'u.username AS username',
+          'u.first_name AS first_name',
+          'u.last_name AS last_name',
+          'CASE WHEN user_like.id IS NOT NULL THEN true ELSE false END AS is_liked',
+          'COUNT(DISTINCT total_likes.id) AS total_likes'
+        ])
+        .where('comment.content_id = :contentId', { contentId })
+        .andWhere('comment.content_type = :type', { type: contentType })
+        .groupBy('comment.id, u.id, user_like.id')
+        .orderBy('comment.created_at', 'ASC')
+        .setParameters({
+          commentContentType: ContentType.COMMENT,
+          userId,
+          contentId,
+          type: contentType,
+        });
 
       const [comments, total] = await Promise.all([
         queryBuilder.offset(offset).limit(pageSize).getRawMany(),

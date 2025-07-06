@@ -14,7 +14,7 @@ export class GetCommentsDto {
   @IsOptional()
   @Min(1)
   @ApiPropertyOptional({ default: PAGING_SIZE })
-  pageSize: number = PAGING_SIZE;
+  pageSize?: number = PAGING_SIZE;
 
   @IsInt({ message: 'contentId must be an integer' })
   @ApiProperty()
@@ -27,9 +27,4 @@ export class GetCommentsDto {
     enum: ContentType,
   })
   contentType: ContentType;
-
-  @IsInt({ message: 'userId must be an integer' })
-  @IsOptional()
-  @ApiPropertyOptional()
-  userId: number;
 }
