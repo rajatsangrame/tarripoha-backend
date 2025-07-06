@@ -3,10 +3,10 @@ import { LikeController } from './likes.controller';
 import { LikeService } from './likes.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
-import { InsertLikeDto } from './dto/like.dto';
-import { GetLikesDto } from './dto/get-likes.dto';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Like } from './entity/like.entity';
+import { LikeDto } from './dto/like.dto';
+import { LikeResponseDto } from './dto/like-response.dto';
 import { ContentType } from '../common/enum/content-type.enum';
 
 const mockUserId = 123;
@@ -15,9 +15,7 @@ const mockLikeResult: Like = {
   userId: mockUserId,
   contentId: 456,
   contentType: ContentType.WORD,
-  isActive: true,
   createdAt: new Date(),
-  updatedAt: new Date(),
   user: {
     id: mockUserId,
     firstName: 'John',
@@ -33,6 +31,8 @@ const mockLikeResult: Like = {
   },
 };
 
+const mockLikeResponse: LikeResponseDto = new LikeResponseDto(5);
+
 describe('LikeController', () => {
   let controller: LikeController;
   let likeService: LikeService;
@@ -40,6 +40,7 @@ describe('LikeController', () => {
   const mockLikeService = {
     insertLike: jest.fn(),
     getLikes: jest.fn(),
+    deleteLike: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -64,17 +65,17 @@ describe('LikeController', () => {
 
   describe('insertLike', () => {
     it('should call likeService.insertLike and return the result', async () => {
-      const mockDto: InsertLikeDto = {
+      const mockDto: LikeDto = {
         contentId: 1,
         contentType: ContentType.WORD,
       };
 
-      mockLikeService.insertLike.mockResolvedValue(mockLikeResult);
+      mockLikeService.insertLike.mockResolvedValue(mockLikeResponse);
 
       const req = { user: { id: mockUserId } };
       const result = await controller.insertLike(mockDto, req);
 
-      expect(result).toEqual(mockLikeResult);
+      expect(result).toEqual(mockLikeResponse);
       expect(mockLikeService.insertLike).toHaveBeenCalledWith(
         mockUserId,
         mockDto,
@@ -84,10 +85,9 @@ describe('LikeController', () => {
 
   describe('getLikes', () => {
     it('should call likeService.getLikes and return the result', async () => {
-      const mockDto: GetLikesDto = {
+      const mockDto: LikeDto = {
         contentId: 1,
         contentType: ContentType.WORD,
-        userId: mockUserId,
       };
       const mockResult = [
         {
@@ -95,9 +95,7 @@ describe('LikeController', () => {
           userId: 123,
           contentId: mockDto.contentId,
           contentType: mockDto.contentType,
-          isActive: true,
           createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ] as Like[];
 
@@ -107,6 +105,52 @@ describe('LikeController', () => {
 
       expect(result).toEqual(mockResult);
       expect(mockLikeService.getLikes).toHaveBeenCalledWith(mockDto);
+    });
+  });
+
+  describe('getUserLikes', () => {
+    it('should call likeService.getLikes with userId and return the result', async () => {
+      const mockDto: LikeDto = {
+        contentId: 1,
+        contentType: ContentType.WORD,
+      };
+      const mockResult = [
+        {
+          id: 1,
+          userId: mockUserId,
+          contentId: mockDto.contentId,
+          contentType: mockDto.contentType,
+          createdAt: new Date(),
+        },
+      ] as Like[];
+
+      mockLikeService.getLikes.mockResolvedValue(mockResult);
+
+      const req = { user: { id: mockUserId } };
+      const result = await controller.getUserLikes(mockDto, req);
+
+      expect(result).toEqual(mockResult);
+      expect(mockLikeService.getLikes).toHaveBeenCalledWith(mockDto, mockUserId);
+    });
+  });
+
+  describe('deleteLike', () => {
+    it('should call likeService.deleteLike and return the result', async () => {
+      const mockDto: LikeDto = {
+        contentId: 1,
+        contentType: ContentType.WORD,
+      };
+
+      mockLikeService.deleteLike.mockResolvedValue(mockLikeResponse);
+
+      const req = { user: { id: mockUserId } };
+      const result = await controller.deleteLike(mockDto, req);
+
+      expect(result).toEqual(mockLikeResponse);
+      expect(mockLikeService.deleteLike).toHaveBeenCalledWith(
+        mockUserId,
+        mockDto,
+      );
     });
   });
 });

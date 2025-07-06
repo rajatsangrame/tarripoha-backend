@@ -5,17 +5,18 @@ import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { SavedWord } from './entity/saved-word.entity';
-import { ContentType } from '../common/enum/content-type.enum';
 import { SavedWordDto } from './dto/saved-word.dto';
+import { SavedResponseDto } from './dto/saved-word-response.dto';
+import { GetSavedWordDto } from './dto/get-saved-word.dto';
+import { PagingResponse } from 'src/common/interface/paging-response';
+import { WordResponseDto } from 'src/words/dto/words-response.dto';
 
 const mockUserId = 123;
-const mocksavedResult: SavedWord = {
+const mockSavedResult: SavedWord = {
   id: 1,
   userId: mockUserId,
-  contentType: ContentType.WORD,
-  isActive: true,
+  wordId: 456,
   createdAt: new Date(),
-  updatedAt: new Date(),
   user: {
     id: mockUserId,
     firstName: 'John',
@@ -31,19 +32,22 @@ const mocksavedResult: SavedWord = {
   },
 };
 
+const mockSavedResponse: SavedResponseDto = new SavedResponseDto(true);
+
 describe('SavedController', () => {
   let controller: SavedController;
   let savedService: SavedService;
 
-  const mocksavedService = {
-    insertSaved: jest.fn(),
-    getSaved: jest.fn(),
+  const mockSavedService = {
+    insertSavedWord: jest.fn(),
+    getSavedWords: jest.fn(),
+    deleteSavedWord: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SavedController],
-      providers: [{ provide: SavedService, useValue: mocksavedService }],
+      providers: [{ provide: SavedService, useValue: mockSavedService }],
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({ canActivate: jest.fn().mockReturnValue(true) })
@@ -60,50 +64,67 @@ describe('SavedController', () => {
     expect(savedService).toBeDefined();
   });
 
-  describe('insertsaved', () => {
-    it('should call savedService.insertsaved and return the result', async () => {
+  describe('insertSavedWord', () => {
+    it('should call savedService.insertSavedWord and return the result', async () => {
       const mockDto: SavedWordDto = {
-        contentId: 1,
-        contentType: ContentType.WORD,
+        wordId: 1,
       };
 
-      mocksavedService.insertSaved.mockResolvedValue(mocksavedResult);
+      mockSavedService.insertSavedWord.mockResolvedValue(mockSavedResponse);
 
       const req = { user: { id: mockUserId } };
       const result = await controller.insertSavedWord(mockDto, req);
 
-      expect(result).toEqual(mocksavedResult);
-      expect(mocksavedService.insertSaved).toHaveBeenCalledWith(
+      expect(result).toEqual(mockSavedResponse);
+      expect(mockSavedService.insertSavedWord).toHaveBeenCalledWith(
         mockUserId,
         mockDto,
       );
     });
   });
 
-  describe('getsaveds', () => {
-    it('should call savedService.getsaved and return the result', async () => {
-      const mockDto: SavedWordDto = {
-        contentType: ContentType.WORD,
-        contentId: 1,
+  describe('getSavedWords', () => {
+    it('should call savedService.getSavedWords and return the result', async () => {
+      const mockDto: GetSavedWordDto = {
+        pageNo: 1,
+        pageSize: 10,
       };
-      const mockResult = [
-        {
-          id: 1,
-          userId: 123,
-          contentId: 1234,
-          contentType: mockDto.contentType,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ] as SavedWord[];
+      const mockResult = new PagingResponse<WordResponseDto>(
+        1,
+        1,
+        10,
+        [] as WordResponseDto[],
+      );
 
-      mocksavedService.getSaved.mockResolvedValue(mockResult);
+      mockSavedService.getSavedWords.mockResolvedValue(mockResult);
 
-      const result = await controller.getSavedWords(mockDto);
+      const req = { user: { id: mockUserId } };
+      const result = await controller.getSavedWords(mockDto, req);
 
       expect(result).toEqual(mockResult);
-      expect(mocksavedService.getSaved).toHaveBeenCalledWith(mockDto);
+      expect(mockSavedService.getSavedWords).toHaveBeenCalledWith(
+        mockUserId,
+        mockDto,
+      );
+    });
+  });
+
+  describe('deleteSavedWord', () => {
+    it('should call savedService.deleteSavedWord and return the result', async () => {
+      const mockDto: SavedWordDto = {
+        wordId: 1,
+      };
+
+      mockSavedService.deleteSavedWord.mockResolvedValue(mockSavedResponse);
+
+      const req = { user: { id: mockUserId } };
+      const result = await controller.deleteSavedWord(mockDto, req);
+
+      expect(result).toEqual(mockSavedResponse);
+      expect(mockSavedService.deleteSavedWord).toHaveBeenCalledWith(
+        mockUserId,
+        mockDto,
+      );
     });
   });
 });
