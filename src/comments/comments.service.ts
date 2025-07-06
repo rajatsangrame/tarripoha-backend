@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entity/comment.entity';
 import { Repository } from 'typeorm';
@@ -82,6 +82,28 @@ export class CommentService {
       });
 
       return new PagingResponse(total, pageNo, pageSize, commentResponse);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteComment(userId: number, commentId: number): Promise<{ sucess: boolean }> {
+    try {
+      const comment = await this.commentRepository.findOne({
+        where: { id: commentId },
+      });
+
+      if (!comment) {
+        throw new NotFoundException('Comment not found');
+      }
+
+      if (comment.userId !== userId) {
+        throw new ForbiddenException('You can only delete your own comments');
+      }
+
+      await this.commentRepository.remove(comment);
+      
+      return { sucess: true };
     } catch (error) {
       throw error;
     }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -44,4 +45,14 @@ export class CommentController {
     const userId = req.user.id;
     return this.commentService.getComments(userId, dto);
   }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(USER_ROLE.USER)
+  async deleteComment(@Param('id') id: number, @Request() req) {
+    const userId = req.user.id;
+    return this.commentService.deleteComment(userId, id);
+  }
+  
 }
