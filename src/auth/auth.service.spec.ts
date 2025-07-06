@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../user/user.service';
+import { UserService } from '../users/user.service';
 import * as bcrypt from 'bcryptjs';
-import { User } from '../user/entity/user.entity';
-import { UserRoleMapping } from '../user/entity/user-mappping.entity';
+import { User } from '../users/entity/user.entity';
+import { UserRoleMapping } from '../users/entity/user-mappping.entity';
 
 describe('AuthService', () => {
   let authService: AuthService;

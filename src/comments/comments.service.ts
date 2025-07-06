@@ -42,7 +42,7 @@ export class CommentService {
 
       const queryBuilder = this.commentRepository
         .createQueryBuilder('comment')
-        .leftJoin('user', 'u', 'u.id = comment.user_id')
+        .leftJoin('users', 'u', 'u.id = comment.user_id')
         .leftJoin(
           'likes',
           'user_like',

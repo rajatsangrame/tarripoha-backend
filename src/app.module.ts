@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './user/user.module';
+import { UserModule } from './users/user.module';
 import { NestJsTypeOrmModule } from './common/modules/typeorm/typeorm.module';
 import { WordModule } from './words/words.module';
 import { CommentController } from './comments/comments.controller';

@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Patch,
   Post,
   Put,
   Query,
@@ -21,25 +22,25 @@ import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
 
-@ApiTags('User')
-@Controller('user')
+@ApiTags('Users')
+@Controller('users')
 @UseInterceptors(ClassSerializerInterceptor) // Eexclude password from user response
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('create-user')
+  @Post()
   async createUser(@Body() dto: CreateUserDto): Promise<User> {
     return this.userService.createUser(dto);
   }
 
-  @Get('search')
+  @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async search(@Query() dto: SearchUserDto): Promise<User[]> {
     return this.userService.search(dto);
   }
 
-  @Post('create-user-mapping')
+  @Post('mapping')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.ADMIN)
@@ -49,7 +50,7 @@ export class UserController {
     return this.userService.createUserMapping(dto);
   }
 
-  @Put('update-user-mapping')
+  @Patch('mapping')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USER_ROLE.ADMIN)

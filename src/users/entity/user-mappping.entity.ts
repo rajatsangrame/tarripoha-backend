@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { UserRole } from './user-role.entity';
 
-@Entity({ name: 'user_role_mapping' })
+@Entity({ name: 'user_role_mappings' })
 export class UserRoleMapping {
   @PrimaryColumn({ name: 'user_id' })
   userId: number;

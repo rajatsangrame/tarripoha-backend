@@ -14,9 +14,9 @@ import { PagingResponse } from 'src/common/interface/paging-response';
 import { plainToInstance } from 'class-transformer';
 import { UpdateWordDto } from './dto/update-word.dto';
 import * as _ from 'lodash';
-import { User } from 'src/user/entity/user.entity';
+import { User } from 'src/users/entity/user.entity';
 import { USER_ROLE } from 'src/guard/role/user-role.enum';
-import { UserRoleMapping } from 'src/user/entity/user-mappping.entity';
+import { UserRoleMapping } from 'src/users/entity/user-mappping.entity';
 
 @Injectable()
 export class WordService {
@@ -90,7 +90,7 @@ export class WordService {
       const queryBuilder = this.wordRepository.createQueryBuilder('word');
       if (userId) {
         queryBuilder
-          .leftJoin('user', 'u', 'u.id = word.user_id')
+          .leftJoin('users', 'u', 'u.id = word.user_id')
           .select(['word.*'])
           .addSelect(
             `EXISTS(
