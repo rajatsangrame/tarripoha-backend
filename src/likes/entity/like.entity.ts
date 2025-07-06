@@ -21,16 +21,10 @@ export class Like {
   contentId: number;
 
   @Column({ name: 'content_type' })
-  contentType: number;
-
-  @Column({ name: 'is_active', default: true })
-  isActive: boolean;
+  contentType: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })

@@ -3,7 +3,7 @@ import { LikeController } from './likes.controller';
 import { LikeService } from './likes.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
-import { InsertLikeDto } from './dto/insert-like.dto';
+import { InsertLikeDto } from './dto/like.dto';
 import { GetLikesDto } from './dto/get-likes.dto';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Like } from './entity/like.entity';

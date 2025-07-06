@@ -24,7 +24,7 @@ export class Comment {
   contentId: number;
 
   @Column({ name: 'content_type' })
-  contentType: number;
+  contentType: string;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

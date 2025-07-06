@@ -1,9 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Like } from './entity/like.entity';
-import { InsertLikeDto } from './dto/insert-like.dto';
-import { GetLikesDto } from './dto/get-likes.dto';
+import { LikeDto } from './dto/like.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { LikeResponseDto } from './dto/like-response.dto';
 
@@ -12,11 +11,11 @@ export class LikeService {
   constructor(
     @InjectRepository(Like) private likeRepository: Repository<Like>,
     private readonly contentValidator: ContentValidator,
-  ) {}
+  ) { }
 
   async insertLike(
     userId: number,
-    dto: InsertLikeDto,
+    dto: LikeDto,
   ): Promise<LikeResponseDto> {
     try {
       const { contentType, contentId } = dto;
@@ -29,20 +28,15 @@ export class LikeService {
       }
       const likeData = { ...dto, userId };
       const like = this.likeRepository.create(likeData);
-      await this.likeRepository.upsert(likeData, {
+      await this.likeRepository.upsert(like, {
         conflictPaths: ['userId', 'contentId', 'contentType'],
       });
       const totalLikes = await this.likeRepository.countBy({
         contentType,
         contentId,
-        isActive: true,
       });
       const likeResponse = new LikeResponseDto(
-        like.userId,
-        like.contentId,
-        like.contentType,
         totalLikes,
-        like.isActive,
       );
       return likeResponse;
     } catch (error) {
@@ -50,7 +44,7 @@ export class LikeService {
     }
   }
 
-  async getLikes(dto: GetLikesDto): Promise<Like[]> {
+  async getLikes(dto: LikeDto, userId?: number): Promise<Like[]> {
     try {
       const queryBuilder = this.likeRepository.createQueryBuilder('like');
 
@@ -60,17 +54,52 @@ export class LikeService {
       queryBuilder.andWhere('like.contentType = :contentType', {
         contentType: dto.contentType,
       });
-      queryBuilder.andWhere('like.isActive = :isActive', {
-        isActive: true,
-      });
 
-      if (dto.userId) {
+      if (userId) {
         queryBuilder.andWhere('like.userId = :userId', {
-          userId: dto.userId,
+          userId,
         });
       }
       const likes = await queryBuilder.getMany();
       return likes;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteLike(
+    userId: number,
+    dto: LikeDto,
+  ): Promise<LikeResponseDto> {
+    try {
+      const { contentType, contentId } = dto;
+      
+      // Check if the like exists
+      const existingLike = await this.likeRepository.findOne({
+        where: {
+          userId,
+          contentId,
+          contentType,
+        },
+      });
+
+      if (!existingLike) {
+        throw new NotFoundException('Like not found');
+      }
+
+      // Delete the like
+      await this.likeRepository.remove(existingLike);
+
+      // Get updated total likes count
+      const totalLikes = await this.likeRepository.countBy({
+        contentType,
+        contentId,
+      });
+
+      const likeResponse = new LikeResponseDto(
+        totalLikes,
+      );
+      return likeResponse;
     } catch (error) {
       throw error;
     }
