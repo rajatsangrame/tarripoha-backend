@@ -2,13 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CommentService } from './comments.service';
 import { Repository } from 'typeorm';
 import { Comment } from './entity/comment.entity';
-import { Word } from '../words/entity/word.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { InsertCommentDto } from './dto/insert-comment.dto';
 import { GetCommentsDto } from './dto/get-comments.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ContentType } from '../common/enum/content-type.enum';
+import { PagingResponse } from '../common/interface/paging-response';
 
 describe('CommentService', () => {
   let service: CommentService;
@@ -19,9 +19,9 @@ describe('CommentService', () => {
     create: jest.fn(),
     save: jest.fn(),
     createQueryBuilder: jest.fn(),
+    findOne: jest.fn(),
+    remove: jest.fn(),
   };
-
-  const mockWordRepository = {};
 
   const mockContentValidator = {
     validateContent: jest.fn(),
@@ -34,10 +34,6 @@ describe('CommentService', () => {
         {
           provide: getRepositoryToken(Comment),
           useValue: mockCommentRepository,
-        },
-        {
-          provide: getRepositoryToken(Word),
-          useValue: mockWordRepository,
         },
         {
           provide: ContentValidator,
@@ -68,7 +64,6 @@ describe('CommentService', () => {
       id: 1,
       userId,
       ...dto,
-      isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as Comment;
@@ -116,54 +111,114 @@ describe('CommentService', () => {
   });
 
   describe('getComments', () => {
+    const userId = 1;
     const dto: GetCommentsDto = {
       contentId: 2,
       contentType: ContentType.WORD,
-      userId: 1,
+      pageNo: 1,
+      pageSize: 20,
     };
-    const mockComments: Comment[] = [
+    const mockComments = [
       {
         id: 1,
         contentId: dto.contentId,
         contentType: dto.contentType,
-        userId: dto.userId,
+        userId: userId,
         text: 'Comment 1',
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Comment,
     ];
-    const mockQueryBuilder = {
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      getMany: jest.fn().mockResolvedValue(mockComments),
-    };
+    const mockPagingResponse = new PagingResponse(1, 1, 20, mockComments);
 
-    it('should return a list of comments', async () => {
-      mockCommentRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder,
-      );
+    it('should return a paging response with comments', async () => {
+      const mockQueryBuilder = {
+        leftJoin: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        groupBy: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        setParameters: jest.fn().mockReturnThis(),
+        offset: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        getRawMany: jest.fn().mockResolvedValue(mockComments),
+        getCount: jest.fn().mockResolvedValue(1),
+      };
 
-      const result = await service.getComments(dto);
+      mockCommentRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
 
+      const result = await service.getComments(userId, dto);
+
+      expect(mockQueryBuilder.leftJoin).toHaveBeenCalled();
+      expect(mockQueryBuilder.select).toHaveBeenCalled();
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
-        'comment.contentId = :contentId',
+        'comment.content_id = :contentId',
         { contentId: dto.contentId },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'comment.contentType = :contentType',
-        { contentType: dto.contentType },
+        'comment.content_type = :type',
+        { type: dto.contentType },
       );
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'comment.isActive = :isActive',
-        { isActive: true },
+      expect(mockQueryBuilder.offset).toHaveBeenCalledWith(0);
+      expect(mockQueryBuilder.limit).toHaveBeenCalledWith(dto.pageSize);
+      expect(result).toBeInstanceOf(PagingResponse);
+      expect(result.total).toBe(1);
+      expect(result.data).toEqual(mockComments);
+    });
+  });
+
+  describe('deleteComment', () => {
+    const userId = 1;
+    const commentId = 1;
+    const mockComment = {
+      id: commentId,
+      userId: userId,
+      text: 'Test comment',
+      contentId: 2,
+      contentType: ContentType.WORD,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as Comment;
+
+    it('should delete a comment if user owns it', async () => {
+      mockCommentRepository.findOne.mockResolvedValue(mockComment);
+      mockCommentRepository.remove.mockResolvedValue(mockComment);
+
+      const result = await service.deleteComment(userId, commentId);
+
+      expect(commentRepository.findOne).toHaveBeenCalledWith({
+        where: { id: commentId },
+      });
+      expect(commentRepository.remove).toHaveBeenCalledWith(mockComment);
+      expect(result).toEqual({ sucess: true });
+    });
+
+    it('should throw NotFoundException if comment does not exist', async () => {
+      mockCommentRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.deleteComment(userId, commentId)).rejects.toThrow(
+        NotFoundException,
       );
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'comment.userId = :userId',
-        { userId: dto.userId },
+
+      expect(commentRepository.findOne).toHaveBeenCalledWith({
+        where: { id: commentId },
+      });
+      expect(commentRepository.remove).not.toHaveBeenCalled();
+    });
+
+    it('should throw ForbiddenException if user does not own the comment', async () => {
+      const differentUserId = 2;
+      mockCommentRepository.findOne.mockResolvedValue(mockComment);
+
+      await expect(service.deleteComment(differentUserId, commentId)).rejects.toThrow(
+        ForbiddenException,
       );
-      expect(mockQueryBuilder.getMany).toHaveBeenCalled();
-      expect(result).toEqual(mockComments);
+
+      expect(commentRepository.findOne).toHaveBeenCalledWith({
+        where: { id: commentId },
+      });
+      expect(commentRepository.remove).not.toHaveBeenCalled();
     });
   });
 });

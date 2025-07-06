@@ -6,6 +6,8 @@ import { RolesGuard } from '../guard/role/user-role.guard';
 import { InsertCommentDto } from './dto/insert-comment.dto';
 import { GetCommentsDto } from './dto/get-comments.dto';
 import { Comment } from './entity/comment.entity';
+import { PagingResponse } from '../common/interface/paging-response';
+import { ContentType } from '../common/enum/content-type.enum';
 
 describe('CommentController', () => {
   let controller: CommentController;
@@ -14,19 +16,21 @@ describe('CommentController', () => {
   const mockCommentService = {
     insertComment: jest.fn(),
     getComments: jest.fn(),
+    deleteComment: jest.fn(),
   };
 
   const mockComment: Comment = {
     id: 1,
     userId: 1,
     contentId: 2,
-    contentType: 1,
+    contentType: ContentType.WORD,
     text: 'This is a test comment',
-    isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
     user: null,
   };
+
+  const mockPagingResponse = new PagingResponse(1, 1, 20, [mockComment]);
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -60,7 +64,7 @@ describe('CommentController', () => {
     it('should call service.insertComment and return the result', async () => {
       const dto: InsertCommentDto = {
         contentId: 2,
-        contentType: 1,
+        contentType: ContentType.WORD,
         text: 'This is a test comment',
       };
       const req = { user: { id: 1 } };
@@ -77,15 +81,30 @@ describe('CommentController', () => {
     it('should call service.getComments and return the result', async () => {
       const dto: GetCommentsDto = {
         contentId: 2,
-        contentType: 1,
-        userId: 1,
+        contentType: ContentType.WORD,
+        pageNo: 1,
       };
-      mockCommentService.getComments.mockResolvedValue([mockComment]);
+      const req = { user: { id: 1 } };
+      mockCommentService.getComments.mockResolvedValue(mockPagingResponse);
 
-      const result = await controller.getComments(dto);
+      const result = await controller.getComments(dto, req);
 
-      expect(service.getComments).toHaveBeenCalledWith(dto);
-      expect(result).toEqual([mockComment]);
+      expect(service.getComments).toHaveBeenCalledWith(1, dto);
+      expect(result).toEqual(mockPagingResponse);
+    });
+  });
+
+  describe('deleteComment', () => {
+    it('should call service.deleteComment and return the result', async () => {
+      const commentId = 1;
+      const req = { user: { id: 1 } };
+      const expectedResult = { sucess: true };
+      mockCommentService.deleteComment.mockResolvedValue(expectedResult);
+
+      const result = await controller.deleteComment(commentId, req);
+
+      expect(service.deleteComment).toHaveBeenCalledWith(1, commentId);
+      expect(result).toEqual(expectedResult);
     });
   });
 });
