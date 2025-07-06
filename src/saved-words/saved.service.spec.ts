@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SavedService } from './saved.service';
 import { Repository } from 'typeorm';
-import { Saved } from './entity/saved-word.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { BadRequestException } from '@nestjs/common';
-import { InsertSavedDto } from './dto/insert-saved.dto';
-import { GetSavedDto } from './dto/get-saved.dto';
+import { SavedWord } from './entity/saved-word.entity';
+import { SavedWordDto } from './dto/saved-word.dto';
+import { ContentType } from 'src/common/enum/content-type.enum';
 
 describe('SavedService', () => {
   let service: SavedService;
-  let savedRepository: Repository<Saved>;
+  let savedRepository: Repository<SavedWord>;
   let contentValidator: ContentValidator;
 
   const mockSavedRepository = {
@@ -28,7 +28,7 @@ describe('SavedService', () => {
       providers: [
         SavedService,
         {
-          provide: getRepositoryToken(Saved),
+          provide: getRepositoryToken(SavedWord),
           useValue: mockSavedRepository,
         },
         {
@@ -39,7 +39,7 @@ describe('SavedService', () => {
     }).compile();
 
     service = module.get<SavedService>(SavedService);
-    savedRepository = module.get<Repository<Saved>>(getRepositoryToken(Saved));
+    savedRepository = module.get<Repository<SavedWord>>(getRepositoryToken(SavedWord));
     contentValidator = module.get<ContentValidator>(ContentValidator);
   });
 
@@ -49,17 +49,16 @@ describe('SavedService', () => {
 
   describe('insertSaved', () => {
     const userId = 1;
-    const insertSavedDto: InsertSavedDto = {
+    const insertSavedDto: SavedWordDto = {
       contentId: 100,
-      contentType: 1,
-      isActive: true,
+      contentType: ContentType.WORD
     };
-    const mockSaved: Saved = {
+    const mockSaved: SavedWord = {
       ...insertSavedDto,
       userId,
       id: 1,
       isActive: true,
-    } as Saved;
+    } as SavedWord;
 
     it('should insert a saved if the content is valid', async () => {
       mockContentValidator.validateContent.mockResolvedValueOnce({
@@ -68,7 +67,7 @@ describe('SavedService', () => {
       mockSavedRepository.create.mockReturnValueOnce(mockSaved);
       mockSavedRepository.save.mockResolvedValueOnce(mockSaved);
 
-      const result = await service.insertSaved(userId, insertSavedDto);
+      const result = await service.insertSavedWord(userId, insertSavedDto);
 
       expect(contentValidator.validateContent).toHaveBeenCalledWith(
         insertSavedDto.contentType,
@@ -92,7 +91,7 @@ describe('SavedService', () => {
         message: 'Content not found',
       });
 
-      await expect(service.insertSaved(userId, insertSavedDto)).rejects.toThrow(
+      await expect(service.insertSavedWord(userId, insertSavedDto)).rejects.toThrow(
         BadRequestException,
       );
       expect(contentValidator.validateContent).toHaveBeenCalledWith(
@@ -106,9 +105,7 @@ describe('SavedService', () => {
 
   describe('getSaved', () => {
     const getSavedDto: GetSavedDto = {
-      contentId: 100,
-      contentType: 1,
-      userId: 1,
+      contentType: ContentType.WORD
     };
 
     it('should return saved matching the query', async () => {
@@ -118,9 +115,7 @@ describe('SavedService', () => {
         getMany: jest.fn().mockResolvedValueOnce([
           {
             id: 1,
-            contentId: getSavedDto.contentId,
             contentType: getSavedDto.contentType,
-            userId: getSavedDto.userId,
           },
         ]),
       };

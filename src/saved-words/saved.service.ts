@@ -1,62 +1,115 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SavedWord } from './entity/saved-word.entity';
-import { InsertSavedDto } from './dto/insert-saved.dto';
-import { GetSavedDto } from './dto/get-saved.dto';
+import { SavedResponseDto } from './dto/saved-word-response.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { PagingResponse } from 'src/common/interface/paging-response';
 import { plainToInstance } from 'class-transformer';
 import { WordResponseDto } from 'src/words/dto/words-response.dto';
+import { SavedWordDto } from './dto/saved-word.dto';
+import { ContentType } from 'src/common/enum/content-type.enum';
+import { GetSavedWordDto } from './dto/get-saved-word.dto';
 
 @Injectable()
 export class SavedService {
   constructor(
     @InjectRepository(SavedWord) private savedRepository: Repository<SavedWord>,
     private readonly contentValidator: ContentValidator,
-  ) {}
+  ) { }
 
-  async insertSaved(userId: number, dto: InsertSavedDto): Promise<SavedWord> {
+  async insertSavedWord(
+    userId: number,
+    dto: SavedWordDto,
+  ): Promise<SavedResponseDto> {
     try {
+      const { wordId } = dto;
       const { isValid, message } = await this.contentValidator.validateContent(
-        dto.contentType,
-        dto.contentId,
+        ContentType.WORD,
+        wordId,
       );
       if (!isValid) {
         throw new BadRequestException(message);
       }
       const savedData = { ...dto, userId };
       const saved = this.savedRepository.create(savedData);
-      await this.savedRepository.upsert(savedData, {
-        conflictPaths: ['userId', 'contentId', 'contentType'],
+      await this.savedRepository.upsert(saved, {
+        conflictPaths: ['userId', 'wordId'],
       });
-      return saved;
+      const savedResponse = new SavedResponseDto(
+        true,
+      );
+      return savedResponse;
     } catch (error) {
       throw error;
     }
   }
 
-  async getSaved(
+  async deleteSavedWord(
     userId: number,
-    dto: GetSavedDto,
+    dto: SavedWordDto,
+  ): Promise<SavedResponseDto> {
+    try {
+      const { wordId } = dto;
+
+      const existingSaved = await this.savedRepository.findOne({
+        where: {
+          userId,
+          wordId,
+        },
+      });
+
+      if (!existingSaved) {
+        throw new NotFoundException('Saved item not found');
+      }
+      await this.savedRepository.remove(existingSaved);
+
+      const savedResponse = new SavedResponseDto(
+        true,
+      );
+      return savedResponse;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getSavedWords(
+    userId: number,
+    dto: GetSavedWordDto,
   ): Promise<PagingResponse<WordResponseDto>> {
     try {
-      const { pageNo, pageSize, contentType } = dto;
+      const { pageNo, pageSize } = dto;
       const offset = (pageNo - 1) * pageSize;
 
       const queryBuilder = this.savedRepository
         .createQueryBuilder('saved')
-        .leftJoin('word', 'w', 'saved.content_id = w.id')
-        .leftJoin('like', 'l', 'l.content_id = w.id AND l.user_id = :userId', {
-          userId,
-        })
-        .where(
-          'saved.user_id = :userId AND saved.content_type = :contentType AND saved.is_active = TRUE AND w.is_active = TRUE',
-          { userId, contentType },
-        )
+        .leftJoin('words', 'w', 'saved.word_id = w.id')
         .select(['w.*'])
-        .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
-        .addSelect('COALESCE(saved.is_active, FALSE)', 'is_saved');
+        .addSelect(
+          `EXISTS(
+            SELECT 1 FROM likes l 
+            WHERE l.content_id = w.id 
+            AND l.content_type = :contentType 
+            AND l.user_id = :userId
+          )`,
+          'is_liked'
+        )
+        .addSelect(
+          `EXISTS(
+            SELECT 1 FROM saved_words sv 
+            WHERE sv.word_id = w.id 
+            AND sv.user_id = :userId
+          )`,
+          'is_saved'
+        )
+        .setParameter('contentType', 'word')
+        .setParameter('userId', userId)
+        .where(
+          'saved.user_id = :userId AND w.is_active = TRUE',
+          { userId }
+        );
+
+
       const [data, total] = await Promise.all([
         queryBuilder.offset(offset).limit(pageSize).getRawMany(),
         queryBuilder.getCount(),

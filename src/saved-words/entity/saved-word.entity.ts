@@ -4,7 +4,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -17,20 +16,11 @@ export class SavedWord {
   @Column({ name: 'user_id' })
   userId: number;
 
-  @Column({ name: 'content_id' })
-  contentId: number;
-
-  @Column({ name: 'content_type' })
-  contentType: string;
-
-  @Column({ name: 'is_active', default: true })
-  isActive: boolean;
+  @Column({ name: 'word_id' })
+  wordId: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })

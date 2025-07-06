@@ -3,17 +3,15 @@ import { SavedController } from './saved.controller';
 import { SavedService } from './saved.service';
 import { JwtAuthGuard } from '../guard/auth/jwt.auth.guard';
 import { RolesGuard } from '../guard/role/user-role.guard';
-import { InsertSavedDto } from './dto/insert-saved.dto';
-import { GetSavedDto } from './dto/get-saved.dto';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { SavedWord } from './entity/saved-word.entity';
 import { ContentType } from '../common/enum/content-type.enum';
+import { SavedWordDto } from './dto/saved-word.dto';
 
 const mockUserId = 123;
 const mocksavedResult: SavedWord = {
   id: 1,
   userId: mockUserId,
-  contentId: 456,
   contentType: ContentType.WORD,
   isActive: true,
   createdAt: new Date(),
@@ -64,16 +62,15 @@ describe('SavedController', () => {
 
   describe('insertsaved', () => {
     it('should call savedService.insertsaved and return the result', async () => {
-      const mockDto: InsertSavedDto = {
+      const mockDto: SavedWordDto = {
         contentId: 1,
         contentType: ContentType.WORD,
-        isActive: true,
       };
 
       mocksavedService.insertSaved.mockResolvedValue(mocksavedResult);
 
       const req = { user: { id: mockUserId } };
-      const result = await controller.insertSaved(mockDto, req);
+      const result = await controller.insertSavedWord(mockDto, req);
 
       expect(result).toEqual(mocksavedResult);
       expect(mocksavedService.insertSaved).toHaveBeenCalledWith(
@@ -85,9 +82,9 @@ describe('SavedController', () => {
 
   describe('getsaveds', () => {
     it('should call savedService.getsaved and return the result', async () => {
-      const mockDto: GetSavedDto = {
+      const mockDto: SavedWordDto = {
         contentType: ContentType.WORD,
-        userId: mockUserId,
+        contentId: 1,
       };
       const mockResult = [
         {
@@ -99,11 +96,11 @@ describe('SavedController', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      ] as Saved[];
+      ] as SavedWord[];
 
       mocksavedService.getSaved.mockResolvedValue(mockResult);
 
-      const result = await controller.getSaved(mockDto);
+      const result = await controller.getSavedWords(mockDto);
 
       expect(result).toEqual(mockResult);
       expect(mocksavedService.getSaved).toHaveBeenCalledWith(mockDto);
