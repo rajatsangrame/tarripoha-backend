@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SavedService } from './saved.service';
 import { Repository } from 'typeorm';
-import { Saved } from './entity/saved.entity';
+import { Saved } from './entity/saved-word.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ContentValidator } from '../common/service/content-validation.service';
 import { BadRequestException } from '@nestjs/common';

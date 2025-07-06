@@ -9,8 +9,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-@Entity({ name: 'saved' })
-export class Saved {
+@Entity({ name: 'saved_words' })
+export class SavedWord {
   @PrimaryGeneratedColumn()
   id: number;
 

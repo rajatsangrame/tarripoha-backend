@@ -14,12 +14,12 @@ import { RolesGuard } from '../guard/role/user-role.guard';
 import { USER_ROLE } from '../guard/role/user-role.enum';
 import { Roles } from '../guard/role/roles.decorator';
 import { InsertSavedDto } from './dto/insert-saved.dto';
-import { Saved } from './entity/saved.entity';
+import { SavedWord } from './entity/saved-word.entity';
 import { GetSavedDto } from './dto/get-saved.dto';
 import { PagingResponse } from 'src/common/interface/paging-response';
 import { WordResponseDto } from 'src/words/dto/words-response.dto';
 
-@Controller('saved')
+@Controller('saved-words')
 @ApiTags('Saved')
 export class SavedController {
   constructor(private savedService: SavedService) {}
@@ -31,7 +31,7 @@ export class SavedController {
   async insertSaved(
     @Body() dto: InsertSavedDto,
     @Request() req,
-  ): Promise<Saved> {
+  ): Promise<SavedWord> {
     const userId = req.user.id;
     return this.savedService.insertSaved(userId, dto);
   }

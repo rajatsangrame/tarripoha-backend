@@ -6,11 +6,11 @@ import { RolesGuard } from '../guard/role/user-role.guard';
 import { InsertSavedDto } from './dto/insert-saved.dto';
 import { GetSavedDto } from './dto/get-saved.dto';
 import { USER_ROLE } from '../guard/role/user-role.enum';
-import { Saved } from './entity/saved.entity';
+import { SavedWord } from './entity/saved-word.entity';
 import { ContentType } from '../common/enum/content-type.enum';
 
 const mockUserId = 123;
-const mocksavedResult: Saved = {
+const mocksavedResult: SavedWord = {
   id: 1,
   userId: mockUserId,
   contentId: 456,

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Saved } from './entity/saved.entity';
+import { SavedWord } from './entity/saved-word.entity';
 import { InsertSavedDto } from './dto/insert-saved.dto';
 import { GetSavedDto } from './dto/get-saved.dto';
 import { ContentValidator } from '../common/service/content-validation.service';
@@ -12,11 +12,11 @@ import { WordResponseDto } from 'src/words/dto/words-response.dto';
 @Injectable()
 export class SavedService {
   constructor(
-    @InjectRepository(Saved) private savedRepository: Repository<Saved>,
+    @InjectRepository(SavedWord) private savedRepository: Repository<SavedWord>,
     private readonly contentValidator: ContentValidator,
   ) {}
 
-  async insertSaved(userId: number, dto: InsertSavedDto): Promise<Saved> {
+  async insertSaved(userId: number, dto: InsertSavedDto): Promise<SavedWord> {
     try {
       const { isValid, message } = await this.contentValidator.validateContent(
         dto.contentType,

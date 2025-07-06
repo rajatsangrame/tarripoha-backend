@@ -10,8 +10,8 @@ import { CommentController } from './comments/comments.controller';
 import { CommentModule } from './comments/comments.module';
 import { LikeController } from './likes/likes.controller';
 import { LikeModule } from './likes/likes.module';
-import { SavedModule } from './saved/saved.module';
-import { SavedController } from './saved/saved.controller';
+import { SavedModule } from './saved-words/saved.module';
+import { SavedController } from './saved-words/saved.controller';
 
 @Module({
   controllers: [

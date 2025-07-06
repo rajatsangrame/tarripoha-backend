@@ -148,24 +148,29 @@ export class WordService {
     try {
       const { query, languageId, pageNo = 1, pageSize = 20 } = dto;
       const offset = (pageNo - 1) * pageSize;
-      const queryBuilder = this.wordRepository.createQueryBuilder('words');
+      const queryBuilder = this.wordRepository.createQueryBuilder('word');
+      queryBuilder.select(['word.*']);
       if (userId) {
         queryBuilder
-          .leftJoin(
-            'likes',
-            'l',
-            'l.content_type = :type AND l.user_id = :userId',
-            { userId, type: 'word' },
+          .addSelect(
+            `EXISTS(
+              SELECT 1 FROM likes l 
+              WHERE l.content_id = word.id 
+              AND l.content_type = :contentType 
+              AND l.user_id = :userId
+            )`,
+            'is_liked'
           )
-          .leftJoin(
-            'saved_words',
-            'sv',
-            'sv.word_id = word.id AND AND sv.user_id = :userId',
-            { userId },
+          .addSelect(
+            `EXISTS(
+              SELECT 1 FROM saved_words sv 
+              WHERE sv.word_id = word.id 
+              AND sv.user_id = :userId
+            )`,
+            'is_saved'
           )
-          .select(['words.*'])
-          .addSelect('COALESCE(l.is_active, FALSE)', 'is_liked')
-          .addSelect('COALESCE(sv.is_active, FALSE)', 'is_saved');
+          .setParameter('contentType', 'word')
+          .setParameter('userId', userId);
       }
       queryBuilder
         .addSelect(
