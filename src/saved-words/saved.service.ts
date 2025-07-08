@@ -85,6 +85,7 @@ export class SavedService {
         .createQueryBuilder('saved')
         .leftJoin('words', 'w', 'saved.word_id = w.id')
         .select(['w.*'])
+        .addSelect('saved.created_at', 'saved_at')
         .addSelect(
           `EXISTS(
             SELECT 1 FROM likes l 
