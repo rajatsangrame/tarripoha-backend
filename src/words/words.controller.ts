@@ -42,7 +42,7 @@ export class WordController {
   @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(USER_ROLE.USER)
+  @Roles(USER_ROLE.USER, USER_ROLE.GUEST)
   async search(
     @Query() dto: SearchWordDto,
     @Request() req,
@@ -54,7 +54,7 @@ export class WordController {
   @Get(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(USER_ROLE.USER)
+  @Roles(USER_ROLE.USER, USER_ROLE.GUEST)
   @ApiParam({
     name: 'id',
     required: true,

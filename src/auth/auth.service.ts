@@ -4,6 +4,7 @@ import { User } from '../users/entity/user.entity';
 import { UserService } from '../users/user.service';
 import * as bcrypt from 'bcryptjs';
 import { UserRoleMapping } from '../users/entity/user-mappping.entity';
+import { USER_ROLE } from 'src/guard/role/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -39,6 +40,19 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       roles: user.roles,
+    };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+
+  async skip() {
+    const payload = {
+      firstName: "Guest",
+      email: "hello@guest.com",
+      roles: [
+        USER_ROLE.GUEST
+      ],
     };
     return {
       accessToken: this.jwtService.sign(payload),
